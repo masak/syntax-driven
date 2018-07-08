@@ -30,6 +30,10 @@ body {
   box-shadow: #aaa 5px 5px 5px;
 }
 
+.App-car:hover {
+  background: #e3e3e3;
+}
+
 .App-car img {
   float: left;
   margin: 0.5em;
