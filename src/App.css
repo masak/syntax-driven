@@ -1,0 +1,45 @@
+body {
+  text-align: center;
+  font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+  font-size: 24px;
+  padding-bottom: 4em;
+}
+
+.App-header {
+  background: #88f;
+  height: 10ex;
+  padding: 20px;
+  color: black;
+  box-shadow: #aaa 0px 5px 5px;
+}
+
+.App-title {
+  font-size: 2em;
+}
+
+.App-allcars {
+  margin-top: 2em;
+}
+
+.App-car {
+  background: #eee;
+  width: 1000px;
+  margin-top: 2em;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: #aaa 5px 5px 5px;
+}
+
+.App-car img {
+  float: left;
+  margin: 0.5em;
+}
+
+.App-car-description {
+  margin: 0.5em;
+  text-align: left;
+}
+
+.clear {
+  clear: both;
+}
