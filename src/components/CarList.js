@@ -28,7 +28,7 @@ const cars = [
     body: (
       <Fragment>
         <h2>Den röda bilen</h2>
-        <p>Bara laser kan den göra. Den är jättesnabb.</p>
+        <p>Bara laser kan den göra. Den är <em>jättesnabb</em>.</p>
       </Fragment>
     ),
   },
