@@ -5,8 +5,7 @@ const Car = (props) => (
     <img
       src={props.imgUrl}
       alt={props.alt}
-      width="500px"
-      height="500px" />
+      width="50%" />
     <div className="App-car-description">
       {props.children}
     </div>

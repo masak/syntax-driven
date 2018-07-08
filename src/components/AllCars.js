@@ -4,9 +4,7 @@ const AllCars = (props) => (
   <img
     className="App-allcars"
     src="images/all-cars.png"
-    alt="alla bilar"
-    width="563px"
-    height="100px" />
+    alt="alla bilar" />
 );
 
 export default AllCars;

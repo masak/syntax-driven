@@ -19,11 +19,14 @@ body {
 
 .App-allcars {
   margin-top: 2em;
+  max-width: 90%;
+  width: 100%;
+  height: auto;
 }
 
 .App-car {
   background: #eee;
-  width: 1000px;
+  width: 90%;
   margin-top: 2em;
   margin-left: auto;
   margin-right: auto;
