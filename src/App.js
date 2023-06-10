@@ -8,6 +8,13 @@ const App = (props) => (
     <header className="App-header">
       <h1 className="App-title">☺springkids☺</h1>
     </header>
+    <nav>
+      <ul>
+        <li>music</li>
+        <li>games</li>
+        <li>art</li>
+      </ul>
+    </nav>
     <AllCars />
     <CarList />
   </Fragment>
