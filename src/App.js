@@ -6,7 +6,7 @@ import CarList from './components/CarList';
 const App = (props) => (
   <Fragment>
     <header className="App-header">
-      <h1 className="App-title">Noas bilar</h1>
+      <h1 className="App-title">☺springkids☺</h1>
     </header>
     <AllCars />
     <CarList />
