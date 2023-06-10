@@ -1,8 +1,6 @@
 import React, { Fragment } from 'react';
 import './App.css';
 import Nav from './components/Nav';
-import AllCars from './components/AllCars';
-import CarList from './components/CarList';
 
 const App = (props) => (
   <Fragment>
@@ -10,8 +8,6 @@ const App = (props) => (
       <h1 className="App-title">☺springkids☺</h1>
     </header>
     <Nav />
-    <AllCars />
-    <CarList />
   </Fragment>
 );
 
