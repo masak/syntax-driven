@@ -1,6 +1,7 @@
 import React, { Fragment } from 'react';
 import './App.css';
 import Nav from './components/Nav';
+import Flower from './components/Flower';
 
 const App = (props) => (
   <Fragment>
@@ -8,6 +9,7 @@ const App = (props) => (
       <h1 className="App-title">☺springkids☺</h1>
     </header>
     <Nav />
+    <Flower />
   </Fragment>
 );
 
