@@ -17,40 +17,6 @@ body {
   font-size: 2em;
 }
 
-.App-allcars {
-  margin-top: 2em;
-  max-width: 90%;
-  width: 100%;
-  height: auto;
-}
-
-.App-car {
-  background: #eee;
-  width: 90%;
-  margin-top: 2em;
-  margin-left: auto;
-  margin-right: auto;
-  box-shadow: #aaa 5px 5px 5px;
-}
-
-.App-car:hover {
-  background: #e3e3e3;
-}
-
-.App-car img {
-  float: left;
-  margin: 0.5em;
-}
-
-.App-car-description {
-  margin: 0.5em;
-  text-align: left;
-}
-
-.clear {
-  clear: both;
-}
-
 .App-flower {
   max-width: 100%;
 }
