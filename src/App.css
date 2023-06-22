@@ -50,3 +50,7 @@ body {
 .clear {
   clear: both;
 }
+
+.App-flower {
+  max-width: 100%;
+}
