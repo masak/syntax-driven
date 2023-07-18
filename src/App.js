@@ -10,7 +10,7 @@ const App = (props) => (
     <p>
         a good compiler can be created from a bad compiler,
         which is better than no compiler.
-        that is the premise of this project, which uses&sp;
+        that is the premise of this project, which uses&#20;
         <em>syntax-driven compilation</em> as its basis.
     </p>
 
