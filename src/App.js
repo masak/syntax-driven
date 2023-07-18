@@ -1,8 +1,8 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import './App.css';
 
 const App = (props) => (
-  <Fragment>
+  <main>
     <header className="App-header">
       <h1 className="App-title">syntax-driven compilation</h1>
     </header>
@@ -10,7 +10,7 @@ const App = (props) => (
     <p>
         a good compiler can be created from a bad compiler,
         which is better than no compiler.
-        that is the premise of this project, which uses
+        that is the premise of this project, which uses&sp;
         <em>syntax-driven compilation</em> as its basis.
     </p>
 
@@ -25,7 +25,7 @@ const App = (props) => (
         find, and... that's it, really.
     </p>
 
-  </Fragment>
+  </main>
 );
 
 export default App;

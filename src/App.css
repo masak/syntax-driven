@@ -3,6 +3,17 @@ body {
   font-family: 'Futura', sans-serif;
   font-size: 16px;
   padding-bottom: 4em;
+  background-color: #ddd;
+}
+
+main {
+  background-color: white;
+  min-width: 960px;
+  width: 90%;
+  max-width: 1200px;
+  padding-left: 1em;
+  padding-right: 1em;
+  margin: auto;
 }
 
 .App-header {
