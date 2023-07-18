@@ -29,3 +29,8 @@ code {
   font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
 }
 
+.translation {
+  flex-direction: row;
+  justify-content: space-between;
+}
+
