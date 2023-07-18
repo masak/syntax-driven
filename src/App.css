@@ -19,11 +19,7 @@ main {
   margin: 0 auto 0;
 }
 
-.App-header {
-  color: black;
-}
-
-.App-title {
-  font-size: 2em;
+code {
+  font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
 }
 

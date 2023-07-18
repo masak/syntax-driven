@@ -3,9 +3,7 @@ import './App.css';
 
 const App = (props) => (
   <main>
-    <header className="App-header">
-      <h1 className="App-title">syntax-driven compilation</h1>
-    </header>
+    <h1>syntax-driven compilation</h1>
 
     <p>
         a good compiler can be created from a bad compiler,
