@@ -9,9 +9,9 @@ body {
 
 main {
   background-color: white;
-  min-width: 960px;
+  min-width: 480px;
   width: 90%;
-  max-width: 1200px;
+  max-width: 600px;
   padding-top: 0;
   padding-left: 1em;
   padding-right: 1em;
