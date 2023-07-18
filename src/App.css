@@ -19,6 +19,11 @@ main {
   margin: 0 auto 0;
 }
 
+pre {
+  background-color: #eee;
+  white-space: pre-line;
+}
+
 code {
   font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
 }
