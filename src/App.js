@@ -20,6 +20,16 @@ const App = (props) => (
         find during the traversal. it's fairly simple.
     </p>
 
+    <pre><code>(def no (x)
+  (id x nil))</code></pre>
+
+    <pre><code>%0 &lt;- params
+%1 &lt;- (car %0)
+%2 &lt;- (cdr %0)
+(err-if %2 "overargs")
+%3 &lt;- (id %1 nil)
+(return %3)</code></pre>
+
   </main>
 );
 
