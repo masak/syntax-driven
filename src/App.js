@@ -20,14 +20,14 @@ const App = (props) => (
         find during the traversal. it's fairly simple.
     </p>
 
-    <pre><code>(def no (x)
+    <pre><code>(def no (x) { "\n" }
   (id x nil))</code></pre>
 
-    <pre><code>%0 &lt;- params
-%1 &lt;- (car %0)
-%2 &lt;- (cdr %0)
-(err-if %2 "overargs")
-%3 &lt;- (id %1 nil)
+    <pre><code>%0 &lt;- params { "\n" }
+%1 &lt;- (car %0) { "\n" }
+%2 &lt;- (cdr %0) { "\n" }
+(err-if %2 "overargs") { "\n" }
+%3 &lt;- (id %1 nil) { "\n" }
 (return %3)</code></pre>
 
   </main>
