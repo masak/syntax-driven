@@ -14,13 +14,10 @@ const App = (props) => (
 
     <p>
         what does it mean for syntax to drive the
-        compilation? the abstract syntax tree (ast) has
-        different types of nodes (for example, one node for
-        if statements, another node for calling the "car"
-        primitive). each such type of node has a small bit
-        of translation logic. we traverse the tree, run each
-        bit of translation logic based on the nodes that we
-        find, and... that's it, really.
+        compilation? it means each type of ast node has its own bit
+        of translation logic. we traverse the tree and run
+        translation logic based on the nodes that we
+        find during the traversal. it's fairly simple.
     </p>
 
   </main>
