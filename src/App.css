@@ -1,22 +1,15 @@
 body {
   text-align: center;
-  font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
-  font-size: 24px;
+  font-family: 'Futura', sans-serif;
+  font-size: 16px;
   padding-bottom: 4em;
 }
 
 .App-header {
-  background: #88f;
-  height: 10ex;
-  padding: 20px;
   color: black;
-  box-shadow: #aaa 0px 5px 5px;
 }
 
 .App-title {
   font-size: 2em;
 }
 
-.App-flower {
-  max-width: 100%;
-}
