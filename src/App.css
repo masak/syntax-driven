@@ -30,7 +30,14 @@ code {
 }
 
 .translation {
+  display: flex;
   flex-direction: row;
   justify-content: space-between;
+}
+
+.arrow {
+  align-self: center;
+  padding-left: 1em;
+  padding-right: 1em;
 }
 

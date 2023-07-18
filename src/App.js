@@ -24,7 +24,7 @@ const App = (props) => (
       <pre><code>(def no (x) { "\n" }
         { "  " }(id x nil))</code></pre>
 
-      <div>→</div>
+      <div class="arrow">→</div>
 
       <pre><code>%0 &lt;- params { "\n" }
         %1 &lt;- (car %0) { "\n" }
