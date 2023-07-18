@@ -1,10 +1,13 @@
 body {
-  text-align: center;
   font-family: 'Gill Sans', sans-serif;
   font-size: 16px;
   margin: 0;
   padding: 0;
   background-color: #ddd;
+}
+
+h1 {
+  text-align: center;
 }
 
 main {
