@@ -35,6 +35,10 @@ code {
   justify-content: space-between;
 }
 
+.translation > pre {
+  flex-grow: 1;
+}
+
 .arrow {
   align-self: center;
   padding-left: 1em;
