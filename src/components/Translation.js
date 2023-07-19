@@ -25,7 +25,7 @@ function highlight(s) {
   while (s.indexOf("def", pos) !== -1) {
     let newpos = s.indexOf("def", pos);
     result.push(s.substring(pos, newpos));
-    result.push(<div class="keyword">def</div>);
+    result.push(<span class="keyword">def</span>);
     pos = newpos + 3;
   }
   result.push(s.substring(pos));
