@@ -1,9 +1,7 @@
 import React from 'react';
 
 function stripSurroundingEmpty(s) {
-  return s.
-    .replace(/^( )*\n/, "")
-    .replace(/\n( )*$/, "");
+  return s.replace(/^( )*\n/, "").replace(/\n( )*$/, "");
 }
 
 function deindent(s) {
