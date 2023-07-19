@@ -37,6 +37,7 @@ function highlight(s) {
 const Translation = (props) => {
   let source = stripSurroundingEmpty(props.source);
   source = deindent(source);
+  source = highlight(source);
 
   let target = stripSurroundingEmpty(props.target);
   target = deindent(target);
