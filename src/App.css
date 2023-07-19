@@ -8,10 +8,11 @@ body {
 
 h1 {
   text-align: center;
+  margin-top: 0; /* this was the thing that pushed down the 'main' container a bit */
 }
 
 p {
-  line-height: 135%; // https://practicaltypography.com/line-spacing.html
+  line-height: 135%; /* https://practicaltypography.com/line-spacing.html */
 }
 
 main {
