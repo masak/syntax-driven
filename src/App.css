@@ -50,3 +50,7 @@ code {
   padding-right: 1em;
 }
 
+.keyword {
+  font-weight: bold;
+}
+

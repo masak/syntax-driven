@@ -21,19 +21,34 @@ function deindent(s) {
   ).join("\n");
 }
 
-const Translation = (props) => (
+function highlight(s) {
+  let pos = 0;
+  let result = [];
+  while (s.indexOf("def", pos) !== -1) {
+    let newpos = s.indexOf("def", pos);
+    result.push(s.substring(pos, newpos));
+    result.push(<div class="keyword">def</div>);
+    pos = newpos + 3;
+  }
+  result.push(s.substring(pos));
+  return result;
+}
+
+const Translation = (props) => {
   let source = stripSurroundingEmpty(props.source);
   source = deindent(source);
 
   let target = stripSurroundingEmpty(props.target);
   target = deindent(target);
 
-  <div class="translation">
-    <pre><code>{source}</code></pre>
-    <div class="arrow">→</div>
-    <pre><code>{target}</code></pre>
-  </div>
-);
+  return (
+    <div class="translation">
+      <pre><code>{source}</code></pre>
+      <div class="arrow">→</div>
+      <pre><code>{target}</code></pre>
+    </div>
+  );
+};
 
 export default Translation;
 
