@@ -8,7 +8,7 @@ function deindent(s) {
   let lines = s.split(/\n/);
   let minIndent = 99;
   for (let line of lines) {
-    let m = s.match(/^( *)/);
+    let m = line.match(/^( *)/);
     let n = m[1].length;
     if (n < minIndent) {
       minIndent = n;
