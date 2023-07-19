@@ -1,5 +1,6 @@
 import React from 'react';
 import './App.css';
+import Translation from './components/Translation';
 
 const App = (props) => (
   <main>
@@ -33,6 +34,22 @@ const App = (props) => (
         %3 &lt;- (id %1 nil) { "\n" }
         (return %3)</code></pre>
     </div>
+
+    <Translation
+      source={`
+        (def no (x)
+          (id x nil))
+      `}
+
+      target={`
+        %0 <- params
+        %1 <- (car %0)
+        %2 <- (cdr %0)
+        (err-if %2 "overargs")
+        %3 <- (id %1 nil)
+        (return %3)
+      `}
+    />
 
   </main>
 );
