@@ -52,24 +52,24 @@ const App = (props) => (
     </p>
 
     <pre><code>
-%1 &lt;- params
-%1 &lt;- (car %0)
-%1 &lt;- (cdr %0)
-%1 &lt;- (id %0 'sym)
-%1 &lt;- (type %0)
-%0 &lt;- (sym 'sym)
-%1 &lt;- (get-global %0)
-%1 &lt;- %0
-
-(arg-in)
-(arg-next %0)
-(arg-many %0)
-(arg-out)
-%1 &lt;- (apply %0)
-
-(err-if %0 "message")
-(return %0)
-(jmp 'label)
+%1 &lt;- params { "\n" }
+%1 &lt;- (car %0) { "\n" }
+%1 &lt;- (cdr %0) { "\n" }
+%1 &lt;- (id %0 'sym) { "\n" }
+%1 &lt;- (type %0) { "\n" }
+%0 &lt;- (sym 'sym) { "\n" }
+%1 &lt;- (get-global %0) { "\n" }
+%1 &lt;- %0 { "\n" }
+{ "\n" }
+(arg-in) { "\n" }
+(arg-next %0) { "\n" }
+(arg-many %0) { "\n" }
+(arg-out) { "\n" }
+%1 &lt;- (apply %0) { "\n" }
+{ "\n" }
+(err-if %0 "message") { "\n" }
+(return %0) { "\n" }
+(jmp 'label) { "\n" }
 (unless-jmp %0 'label)</code></pre>
 
   </main>
