@@ -37,7 +37,40 @@ const App = (props) => (
       `}
     />
 
+    <p>
+        let me say a few things about the target language on the
+        right. it's an assembly view of a bytecode language for a
+        simple virtual machine &mdash; maybe better to call it a
+        runtime &mdash; and the instructions correspond to the
+        smallest possible actions that a bel evaluator carries out.
+        at least in principle, it should be possible to translate
+        each instruction into a sequence of bytes.
+    </p>
+
+    <p>
+        here is the instruction set.
+    </p>
+
+    <pre><code>
+%1 &lt;- params
+%1 &lt;- (car %0)
+%1 &lt;- (cdr %0)
+%1 &lt;- (id %0 'sym)
+%1 &lt;- (type %0)
+%0 &lt;- (sym 'sym)
+%1 &lt;- (get-global %0)
+%1 &lt;- %0
+
+(arg-in)
+(arg-next %0)
+(arg-many %0)
+(arg-out)
+%1 &lt;- (apply %0)
+
+(err-if %0 "message")
+(return %0)
+(jmp 'label)
+(unless-jmp %0 'label)</code></pre>
+
   </main>
 );
-
-export default App;
