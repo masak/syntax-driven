@@ -31,9 +31,9 @@ const App = (props) => (
         %0 <- params
         %1 <- (car %0)
         %2 <- (cdr %0)
-        (err-if %2 "overargs")
+        (err-if %2 'overargs)
         %3 <- (id %1 nil)
-        (return %3)
+        return %3
       `}
     />
 
@@ -46,14 +46,15 @@ const App = (props) => (
     </p>
 
     <p>
-        here is the instruction set.
+        here is the instruction set. i've greyed out the parts
+        we're not using yet.
     </p>
 
     <pre><code>01 tr -- --     %tr &lt;- params          { "\n" }
 22 tr r1 --     %tr &lt;- (car %r1)       { "\n" }
 23 tr r1 --     %tr &lt;- (cdr %r1)       { "\n" }
 24 tr r1 sy     %tr &lt;- (id %r1 symbol) { "\n" }
-25 tr -- --     %tr &lt;- (join nil nil)  { "\n" }
+<span class="less-important">25 tr -- --     %tr &lt;- (join nil nil)  { "\n" }
 26 tr r1 --     %tr &lt;- (join %r1 nil)  { "\n" }
 27 tr r1 r2     %tr &lt;- (join %r1 %r2)  { "\n" }
 28 tr r1 --     %tr &lt;- (type %r1)      { "\n" }
@@ -67,12 +68,12 @@ const App = (props) => (
 52 -- r1 --       add list of arguments   { "\n" }
 53 -- -- --     (end of arguments)        { "\n" }
 60 -- r1 --     (apply %r1 &lt;args&gt;)  { "\n" }
-61 tr r1 --     %tr &lt; (apply %r1 &lt;args&gt;) { "\n" }
+61 tr r1 --     %tr &lt; (apply %r1 &lt;args&gt;) { "\n" }</span>
 E0 -- r1 sy     (err symbol) if %r1 != nil        { "\n" }
 F0 -- r1 --     return %r1                { "\n" }
-F1 -- r1 r2     return %r1 if %r2 != nil  { "\n" }
+<span class="less-important">F1 -- r1 r2     return %r1 if %r2 != nil  { "\n" }
 F2 -- -- r2     return nil if %r2 == nil  { "\n" }
-F3 -- -- r2     return t   if %r2 == nil  { "\n" }</code></pre>
+F3 -- -- r2     return t   if %r2 == nil  { "\n" }</span></code></pre>
   </main>
 );
 

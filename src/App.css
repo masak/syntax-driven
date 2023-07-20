@@ -58,3 +58,7 @@ code {
   font-weight: bold;
 }
 
+.less-important {
+  color: #999;
+}
+
