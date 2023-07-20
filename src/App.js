@@ -28,12 +28,12 @@ const App = (props) => (
       `}
 
       target={`
-        %0 &larr; params
+        %0 ← params
         err 'underargs if %0 == nil
-        %1 &larr; (cdr %0)
+        %1 ← (cdr %0)
         err 'overargs if %1 != nil
-        %2 &larr; (car %0)
-        %3 &larr; (id %2 nil)
+        %2 ← (car %0)
+        %3 ← (id %2 nil)
         return %3
       `}
     />
@@ -51,16 +51,16 @@ const App = (props) => (
         we're not using yet.
     </p>
 
-    <pre><code>01 tr -- --     %tr &lt;- params          { "\n" }
-22 tr r1 --     %tr &larr; (car %r1)       { "\n" }
-23 tr r1 --     %tr &larr; (cdr %r1)       { "\n" }
-24 tr r1 sy     %tr &larr; (id %r1 symbol) { "\n" }
-<span class="less-important">25 tr -- --     %tr &larr; (join nil nil)  { "\n" }
-26 tr r1 --     %tr &larr; (join %r1 nil)  { "\n" }
-27 tr r1 r2     %tr &larr; (join %r1 %r2)  { "\n" }
-28 tr r1 --     %tr &larr; (type %r1)      { "\n" }
-30 tr r1 --     %tr &larr; r1              { "\n" }
-31 tr s1 --     %tr &larr; symbol          { "\n" }
+    <pre><code>01 tr -- --     %tr ← params          { "\n" }
+22 tr r1 --     %tr ← (car %r1)       { "\n" }
+23 tr r1 --     %tr ← (cdr %r1)       { "\n" }
+24 tr r1 sy     %tr ← (id %r1 symbol) { "\n" }
+<span class="less-important">25 tr -- --     %tr ← (join nil nil)  { "\n" }
+26 tr r1 --     %tr ← (join %r1 nil)  { "\n" }
+27 tr r1 r2     %tr ← (join %r1 %r2)  { "\n" }
+28 tr r1 --     %tr ← (type %r1)      { "\n" }
+30 tr r1 --     %tr ← r1              { "\n" }
+31 tr s1 --     %tr ← symbol          { "\n" }
 40 lb -- --     jmp label                  { "\n" }
 41 lb r1 --     jmp label if %r1 != nil    { "\n" }
 42 lb r1 --     jmp label if %r1 == nil    { "\n" }
@@ -69,7 +69,7 @@ const App = (props) => (
 52 -- r1 --       add list of arguments    { "\n" }
 53 -- -- --     (end of arguments)         { "\n" }
 60 -- r1 --     (apply %r1 &lt;args&gt;)   { "\n" }
-61 tr r1 --     %tr &larr;(apply %r1 &lt;args&gt;) { "\n" }</span>
+61 tr r1 --     %tr ← (apply %r1 &lt;args&gt;) { "\n" }</span>
 E0 -- r1 sy     (err symbol) if %r1 != nil        { "\n" }
 F0 -- r1 --     return %r1                 { "\n" }
 <span class="less-important">F1 -- r1 r2     return %r1 if %r2 != nil  { "\n" }
