@@ -40,38 +40,39 @@ const App = (props) => (
     <p>
         let me say a few things about the target language on the
         right. it's an assembly view of a bytecode language for a
-        simple virtual machine &mdash; maybe better to call it a
-        runtime &mdash; and the instructions correspond to the
-        smallest possible actions that a bel evaluator carries out.
-        at least in principle, it should be possible to translate
-        each instruction into a sequence of bytes.
+        runtime. each instruction fits comfortably into 4 bytes
+        (32 bits); one byte for the opcode, three for
+        opcode-specific operands.
     </p>
 
     <p>
         here is the instruction set.
     </p>
 
-    <pre><code>
-%1 &lt;- params { "\n" }
-%1 &lt;- (car %0) { "\n" }
-%1 &lt;- (cdr %0) { "\n" }
-%1 &lt;- (id %0 'sym) { "\n" }
-%1 &lt;- (type %0) { "\n" }
-%0 &lt;- (sym 'sym) { "\n" }
-%1 &lt;- (get-global %0) { "\n" }
-%1 &lt;- %0 { "\n" }
-{ "\n" }
-(arg-in) { "\n" }
-(arg-next %0) { "\n" }
-(arg-many %0) { "\n" }
-(arg-out) { "\n" }
-%1 &lt;- (apply %0) { "\n" }
-{ "\n" }
-(err-if %0 "message") { "\n" }
-(return %0) { "\n" }
-(jmp 'label) { "\n" }
-(unless-jmp %0 'label)</code></pre>
-
+    <pre><code>01 tr -- --     %tr &lt;- params          { "\n" }
+22 tr r1 --     %tr &lt;- (car %r1)       { "\n" }
+23 tr r1 --     %tr &lt;- (cdr %r1)       { "\n" }
+24 tr r1 sy     %tr &lt;- (id %r1 symbol) { "\n" }
+25 tr -- --     %tr &lt;- (join nil nil)  { "\n" }
+26 tr r1 --     %tr &lt;- (join %r1 nil)  { "\n" }
+27 tr r1 r2     %tr &lt;- (join %r1 %r2)  { "\n" }
+28 tr r1 --     %tr &lt;- (type %r1)      { "\n" }
+30 tr r1 --     %tr &lt;- r1              { "\n" }
+31 tr s1 --     %tr &lt;- symbol          { "\n" }
+40 lb -- --     jmp label                 { "\n" }
+41 lb r1 --     jmp label if %r1 != nil   { "\n" }
+42 lb r1 --     jmp label if %r1 == nil   { "\n" }
+50 -- -- --     (start of arguments)      { "\n" }
+51 -- r1 --       add a single argument   { "\n" }
+52 -- r1 --       add list of arguments   { "\n" }
+53 -- -- --     (end of arguments)        { "\n" }
+60 -- r1 --     (apply %r1 &lt;args&gt;)  { "\n" }
+61 tr r1 --     %tr &lt; (apply %r1 &lt;args&gt;) { "\n" }
+E0 -- r1 sy     (err symbol) if %r1 != nil        { "\n" }
+F0 -- r1 --     return %r1                { "\n" }
+F1 -- r1 r2     return %r1 if %r2 != nil  { "\n" }
+F2 -- -- r2     return nil if %r2 == nil  { "\n" }
+F3 -- -- r2     return t   if %r2 == nil  { "\n" }</code></pre>
   </main>
 );
 
