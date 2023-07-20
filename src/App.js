@@ -74,3 +74,5 @@ const App = (props) => (
 
   </main>
 );
+
+export default App;
