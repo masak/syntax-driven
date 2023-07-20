@@ -95,7 +95,7 @@ F3 -- -- r2     return t   if %r2 == nil</span></code></pre>
 
     <p>
         let's look at the translation of the next function,
-        <code>atom</code>.
+        { " " } <code>atom</code>.
     </p>
 
     <Translation
@@ -112,14 +112,62 @@ F3 -- -- r2     return t   if %r2 == nil</span></code></pre>
         %2 ← (car %0)
         %3 ← (get-global "no")
         %4 ← (type %1)
-        %5 ← (id %4 pair)
+        %5 ← (id %4 'pair)
         (arg-start)
-        (arg-one %5)
+          (arg-one %5)
         (arg-end)
         %6 ← (apply %3)
         return %6
       `}
     />
+
+    <p>
+        the instructions in the body now outnumber those in
+        the header, and from now on it's mostly going to stay
+        that way.
+    </p>
+
+    <p>
+        notice how we spend 4 instructions on calling the
+        { " " } <code>no</code> function? not only that, but
+        we're paying for all the overhead of argument/parameter
+        handling between the two functions, as well as
+        handling the return value. transfer between functions
+        is (somewhat) expensive... and we're doing it all for
+        the benefit of a single instruction in the { " " }
+        <code>no</code> function.
+    </p>
+
+    <p>
+        it's time we introduce a very important compiler
+        optimization: inlining. this one is so important that
+        we do it eagerly, emitting the inlined code directly
+        rather than the call. we get this result:
+    </p>
+
+    <Translation
+      source={`
+        (def atom (x)
+          (no (id (type x) 'pair)))
+      `}
+
+      target={`
+        %0 ← params
+        err 'underargs if %0 == nil
+        %1 ← (cdr %0)
+        err 'overargs if %1 != nil
+        %2 ← (car %0)
+        %3 ← (get-global "no")
+        %4 ← (type %1)
+        %5 ← (id %4 'pair)
+        %6 ← (id %5 nil)
+        return %6
+      `}
+    />
+
+    <p>
+        much better.
+    </p>
   </main>
 );
 
