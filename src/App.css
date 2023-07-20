@@ -44,12 +44,14 @@ code {
 
 .translation > pre {
   flex-grow: 1;
+  flex-shrink: 1;
 }
 
 .arrow {
   align-self: center;
   padding-left: 1em;
   padding-right: 1em;
+  flex-shrink: 1;
 }
 
 .keyword {
