@@ -35,14 +35,21 @@ code {
   font-size: 12px;
 }
 
+/*
 .translation {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  max-width: 100%;
+}
+*/
+
+.translation {
+  display: flex;
+  flex-direction: column;
 }
 
 .translation > pre {
+  align-self: center;
   flex-grow: 1;
   flex-shrink: 1;
 }
