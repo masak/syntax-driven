@@ -166,7 +166,29 @@ F3 -- -- r2     return t   if %r2 == nil</span></code></pre>
     />
 
     <p>
-        much better.
+        much better. but how does that work? how can we get only
+        the juicy contents of the { " " } <code>no</code>
+        function, delivered straight into the { " " }
+        <code>atom</code> function?
+    </p>
+
+    <p>
+        the short answer is that we symbolically evaluate calling
+        the { " " } <code>no</code> function. the { " " }
+        <code>parms</code> instruction becomes populated with the
+        arguments built up before the call, and further
+        destructuring juggles around with these, mostly
+        eliminating the need for { " " } <code>err</code>
+        instructions and canceling out arguments against parameter
+        destructuring. in the { " " } <code>no</code> bytecode
+        function body itself, only the second-last instruction is
+        actually "run", which means we emit it into the { " " }
+        <code>atom</code> function. the final { " " }
+        <code>return</code> instruction is also silently absorbed;
+        since inlining is about the { " " } <code>no</code>
+        function losing its identity as it gets absorbed into
+        { " " } <code>atom</code>, there's no longer anything to
+        return from.
     </p>
   </main>
 );
