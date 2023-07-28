@@ -267,11 +267,11 @@ function prettySerialize(funcs) {
         }
     }
     for (let func of funcs) {
-        result.push("(def ");
+        result.push("(");
         result.push(
-          <Keyword>${func.name}</Keyword>
+          <Keyword>def</Keyword>
         );
-        result.push(" ");
+        result.push(` ${func.name} `);
         serializeExpr(func.params);
         result.push("\n  ");
         for (let stmt of func.body) {
