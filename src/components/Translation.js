@@ -265,7 +265,7 @@ function prettySerialize(funcs) {
         for (let stmt of func.body) {
             serializeExpr(stmt);
         }
-        result.push;
+        result.push(")");
     }
     return result;
 }
