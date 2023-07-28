@@ -178,7 +178,7 @@ F3 -- -- r2     return t   if %r2 == nil</span></code></pre>
         <code>parms</code> instruction becomes populated with the
         arguments built up before the call, and further
         destructuring juggles around with these, mostly
-        eliminating the need for { " " } <code>err</code>
+        eliminating the need for { " " } <code>err</code> { " " }
         instructions and canceling out arguments against parameter
         destructuring. in the { " " } <code>no</code> bytecode
         function body itself, only the second-last instruction is
@@ -189,6 +189,14 @@ F3 -- -- r2     return t   if %r2 == nil</span></code></pre>
         function losing its identity as it gets absorbed into
         { " " } <code>atom</code>, there's no longer anything to
         return from.
+    </p>
+
+    <p>
+        this whole inlining thing is a space-vs-time trade-off.
+        all things considered, i'm willing to pay a fair bit of
+        space (extra instructions) to shave off some time during
+        execution. that's the whole reason i'm compiling instead
+        of interpreting.
     </p>
   </main>
 );
