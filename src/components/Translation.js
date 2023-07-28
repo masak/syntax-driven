@@ -224,10 +224,56 @@ function parse(input) {
     return funcs;
 }
 
+function prettySerialize(funcs) {
+    let result = [];
+    function serializeExpr(expr) {
+        if (expr instanceof Ast.Symbol) {
+            result.push(expr.name);
+        }
+        else if (expr instanceof Ast.Func) {
+            result.push("###func###");
+        }
+        else if (expr instanceof Ast.Quote) {
+            result.push("'");
+            serializeExpr(expr.datum);
+        }
+        else if (expr instanceof Ast.List) {
+            result.push("(");
+            for (let elem of expr.elems) {
+                serializeExpr(elem);
+            }
+            result.push(")");
+        }
+        else if (expr instanceof Ast.DottedList) {
+            result.push("(");
+            for (let elem of expr.regularElems) {
+                serializeExpr(elem);
+            }
+            result.push(" . ");
+            serializeExpr(expr.lastElem);
+            result.push(")");
+        }
+        else {
+            let _coverageCheck = expr;
+            return _coverageCheck;
+        }
+    }
+    for (let func of funcs) {
+        result.push(`(def ${func.name} `);
+        serializeExpr(func.params);
+        result.push(" ");
+        for (let stmt of func.body) {
+            serializeExpr(stmt);
+        }
+        result.push;
+    }
+    return result;
+}
+
 const Translation = (props) => {
     let source = stripSurroundingEmpty(props.source);
     source = deindent(source);
-    source = JSON.stringify(parse(source));
+    source = prettySerialize(parse(source));
     
     let target = stripSurroundingEmpty(props.target);
     target = deindent(target);
