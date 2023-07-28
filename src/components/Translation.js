@@ -1,5 +1,7 @@
 import React from 'react';
 
+import Keyword from './Keyword';
+
 function stripSurroundingEmpty(s) {
     return s.replace(/^( )*\n/, "").replace(/\n( )*$/, "");
 }
@@ -265,7 +267,11 @@ function prettySerialize(funcs) {
         }
     }
     for (let func of funcs) {
-        result.push(`(def ${func.name} `);
+        result.push("(def ");
+        result.push(
+          <Keyword>${func.name}</Keyword>
+        );
+        result.push(" ");
         serializeExpr(func.params);
         result.push("\n  ");
         for (let stmt of func.body) {
