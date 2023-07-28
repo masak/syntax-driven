@@ -39,23 +39,27 @@ pre code {
   font-size: 12px;
 }
 
-/*
 .translation {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
 }
-*/
-
-.translation {
-  display: flex;
-  flex-direction: column;
-}
 
 .translation > pre {
-  align-self: center;
   flex-grow: 1;
   flex-shrink: 1;
+}
+
+@media screen and (max-width: 800px) {
+  .translation {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .translation > pre {
+    align-self: center;
+  }
 }
 
 .arrow {
