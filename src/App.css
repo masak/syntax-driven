@@ -32,6 +32,10 @@ pre {
 
 code {
   font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
+  font-size: 16px;
+}
+
+pre code {
   font-size: 12px;
 }
 
