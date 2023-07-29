@@ -28,13 +28,9 @@ const App = (props) => (
       `}
 
       target={`
-        %0 ← params
-        err 'underargs if %0 == nil
-        %1 ← (cdr %0)
-        err 'overargs if %1 != nil
-        %2 ← (car %0)
-        %3 ← (id %2 nil)
-        return %3
+        bcfn no [req %0; reg %0..%1]:
+          %1 ← (id %0 nil)
+          return %1
       `}
     />
 
@@ -43,7 +39,10 @@ const App = (props) => (
         right. it's an assembly view of a bytecode language for a
         runtime. each instruction fits comfortably into 4 bytes
         (32 bits); one byte for the opcode, three for
-        opcode-specific operands.
+        opcode-specific operands. there's another 4 bytes for the
+        header; the name is included for clarity but it's not
+        actually part of the compiled code itself. so you're
+        looking at a 12-byte compiled function above.
     </p>
 
     <p>
@@ -77,16 +76,9 @@ F2 -- -- r2     return nil if %r2 == nil   { "\n" }
 F3 -- -- r2     return t   if %r2 == nil</span></code></pre>
 
     <p>
-        it's a little bit funny that the compiled bytecode of
-        the `no` function spends five instructions on parameter
-        handling (corresponding to the `(x)` parameter list in
-        the Bel code), and then just two instructions on the
-        body. the function has a disproportionately big head.
-    </p>
-
-    <p>
-        right now we're kind of wasting registers; using 4 when
-        we could use only 2. a bytecode function could use up to
+        we don't actually need the function to use 2 registers;
+        it could work equally well with just 1.
+        a bytecode function could use up to
         256 different registers, but of course there is a lot of
         sense in using as few as we can. we'll come back to this
         issue a bit later, as we will soon have bigger fish to
@@ -105,27 +97,17 @@ F3 -- -- r2     return t   if %r2 == nil</span></code></pre>
       `}
 
       target={`
-        %0 ← params
-        err 'underargs if %0 == nil
-        %1 ← (cdr %0)
-        err 'overargs if %1 != nil
-        %2 ← (car %0)
-        %3 ← (get-global "no")
-        %4 ← (type %1)
-        %5 ← (id %4 'pair)
-        (arg-start)
-          (arg-one %5)
-        (arg-end)
-        %6 ← (apply %3)
-        return %6
+        bcfn atom [req %0; reg %0..%4]:
+          %1 ← (get-global "no")
+          %2 ← (type %0)
+          %3 ← (id %2 'pair)
+          (arg-start)
+            (arg-one %3)
+          (arg-end)
+          %4 ← (apply %1)
+          return %4
       `}
     />
-
-    <p>
-        the instructions in the body now outnumber those in
-        the header, and from now on it's mostly going to stay
-        that way.
-    </p>
 
     <p>
         notice how we spend 4 instructions on calling the
@@ -152,16 +134,12 @@ F3 -- -- r2     return t   if %r2 == nil</span></code></pre>
       `}
 
       target={`
-        %0 ← params
-        err 'underargs if %0 == nil
-        %1 ← (cdr %0)
-        err 'overargs if %1 != nil
-        %2 ← (car %0)
-        %3 ← (get-global "no")
-        %4 ← (type %1)
-        %5 ← (id %4 'pair)
-        %6 ← (id %5 nil)
-        return %6
+        bcfn atom [req %0; reg %0..%4]:
+          %1 ← (get-global "no")
+          %2 ← (type %0)
+          %3 ← (id %2 'pair)
+          %4 ← (id %3 nil)
+          return %4
       `}
     />
 
@@ -173,13 +151,12 @@ F3 -- -- r2     return t   if %r2 == nil</span></code></pre>
     </p>
 
     <p>
-        the short answer is that we symbolically evaluate calling
+        the answer is that we symbolically evaluate calling
         the { " " } <code>no</code> function. the { " " }
         <code>parms</code> instruction becomes populated with the
         arguments built up before the call, and further
-        destructuring juggles around with these, mostly
-        eliminating the need for { " " } <code>err</code> { " " }
-        instructions and canceling out arguments against parameter
+        destructuring juggles around with these,
+        canceling out arguments against parameter
         destructuring. in the { " " } <code>no</code> bytecode
         function body itself, only the second-last instruction is
         actually "run", which means we emit it into the { " " }
