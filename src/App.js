@@ -59,7 +59,7 @@ const App = (props) => (
 26 tr r1 --     %tr ← (join %r1 nil)  { "\n" }
 27 tr r1 r2     %tr ← (join %r1 %r2)  { "\n" }
 28 tr r1 --     %tr ← (type %r1)      { "\n" }
-30 tr r1 --     %tr ← r1              { "\n" }
+30 tr r1 --     %tr ← %r1             { "\n" }
 31 tr s1 --     %tr ← symbol          { "\n" }
 40 lb -- --     jmp label                  { "\n" }
 41 lb r1 --     jmp label if %r1 != nil    { "\n" }
