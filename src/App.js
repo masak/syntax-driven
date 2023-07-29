@@ -50,9 +50,8 @@ const App = (props) => (
         we're not using yet.
     </p>
 
-    <pre><code>01 tr -- --     %tr ← params          { "\n" }
-22 tr r1 --     %tr ← (car %r1)       { "\n" }
-23 tr r1 --     %tr ← (cdr %r1)       { "\n" }
+    <pre><code><span class="less-important">22 tr r1 --     %tr ← (car %r1)       { "\n" }
+23 tr r1 --     %tr ← (cdr %r1)       { "\n" }</span>
 24 tr r1 sy     %tr ← (id %r1 symbol) { "\n" }
 <span class="less-important">25 tr -- --     %tr ← (join nil nil)  { "\n" }
 26 tr r1 --     %tr ← (join %r1 nil)  { "\n" }
@@ -68,8 +67,8 @@ const App = (props) => (
 52 -- r1 --       add list of arguments    { "\n" }
 53 -- -- --     (end of arguments)         { "\n" }
 60 -- r1 --     (apply %r1 &lt;args&gt;)   { "\n" }
-61 tr r1 --     %tr ← (apply %r1 &lt;args&gt;) { "\n" }</span>
-E0 -- r1 sy     err symbol if %r1 != nil   { "\n" }
+61 tr r1 --     %tr ← (apply %r1 &lt;args&gt;) { "\n" }
+E0 -- r1 sy     err symbol if %r1 != nil   { "\n" }</span>
 F0 -- r1 --     return %r1                 { "\n" }
 <span class="less-important">F1 -- r1 r2     return %r1 if %r2 != nil  { "\n" }
 F2 -- -- r2     return nil if %r2 == nil   { "\n" }
