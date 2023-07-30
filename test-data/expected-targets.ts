@@ -4,7 +4,7 @@ import {
 } from "../compiler-src/target";
 
 function target(name: string, header: Header, body: string): Target {
-    return new Target(name, header, body);
+    return new Target(name, header, []);
 }
 
 let expectedTargets = new Map<string, Target>([
