@@ -1,11 +1,13 @@
 import {
     Ast,
+    AstList,
+    AstSymbol,
     parse,
 } from "./parse-source";
 
 export class Source {
     public name: string;
-    public params: Ast.Symbol | Ast.List;
+    public params: AstSymbol | AstList;
     public body: Array<Ast>;
 
     constructor(contents: string) {

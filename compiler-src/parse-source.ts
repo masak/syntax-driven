@@ -15,33 +15,31 @@ class EvQuot {
 }
 
 export type Ast =
-    Ast.Func |
-    Ast.List |
-    Ast.Quote |
-    Ast.Symbol;
+    AstFunc |
+    AstList |
+    AstQuote |
+    AstSymbol;
 
-export namespace Ast {
-    export class Func {
-        constructor(
-            public name: string,
-            public params: Ast.Symbol | Ast.List,
-            public body: Array<Ast>) {
-        }
+export class AstFunc {
+    constructor(
+        public name: string,
+        public params: AstSymbol | AstList,
+        public body: Array<Ast>) {
     }
+}
 
-    export class List {
-        constructor(public elems: Array<Ast>,) {
-        }
+export class AstList {
+    constructor(public elems: Array<Ast>,) {
     }
+}
 
-    export class Quote {
-        constructor(public datum: Ast) {
-        }
+export class AstQuote {
+    constructor(public datum: Ast) {
     }
+}
 
-    export class Symbol {
-        constructor(public name: string) {
-        }
+export class AstSymbol {
+    constructor(public name: string) {
     }
 }
 
@@ -49,16 +47,16 @@ const WHITESPACE = /^[\s\n]*/;
 const SYMBOL = /^\w+/;
 
 function isSymbolOfName(ast: Ast, name: string): boolean {
-    return ast instanceof Ast.Symbol && ast.name === name;
+    return ast instanceof AstSymbol && ast.name === name;
 }
 
-function isSymbol(ast: Ast): ast is Ast.Symbol {
-    return ast instanceof Ast.Symbol;
+function isSymbol(ast: Ast): ast is AstSymbol {
+    return ast instanceof AstSymbol;
 }
 
-function isParams(ast: Ast): ast is Ast.Symbol | Ast.List {
-    return ast instanceof Ast.Symbol ||
-        ast instanceof Ast.List;
+function isParams(ast: Ast): ast is AstSymbol | AstList {
+    return ast instanceof AstSymbol ||
+        ast instanceof AstList;
 }
 
 function extractElems(stack: Array<Ev>): Array<EvTree> {
@@ -70,7 +68,7 @@ function extractElems(stack: Array<Ev>): Array<EvTree> {
                 throw new Error("Quote marker without datum");
             }
             let datum = elems.shift()!;
-            let quote = new Ast.Quote(datum.ast);
+            let quote = new AstQuote(datum.ast);
             elems.unshift(new EvTree(quote));
         }
         else if (elem instanceof EvOpenParen) {
@@ -92,10 +90,10 @@ function toAst(ev: Ev): Ast {
     }
 }
 
-function toFunc(ev: Ev): Ast.Func {
+function toFunc(ev: Ev): AstFunc {
     if (ev instanceof EvTree) {
-        if (ev.ast instanceof Ast.Func) {
-            return ev.ast as Ast.Func;
+        if (ev.ast instanceof AstFunc) {
+            return ev.ast as AstFunc;
         }
         else {
             console.log(ev.ast);
@@ -105,7 +103,7 @@ function toFunc(ev: Ev): Ast.Func {
     throw new Error(`Not a function: ${ev.constructor.name}`);
 }
 
-export function parse(input: string): Array<Ast.Func> {
+export function parse(input: string): Array<AstFunc> {
     let stack: Array<Ev> = [];
     let pos = 0;
 
@@ -124,10 +122,10 @@ export function parse(input: string): Array<Ast.Func> {
         }
         else if (input.charAt(pos) === ")") {
             let elems = extractElems(stack);
-            let list = new Ast.List(elems.map(toAst));
+            let list = new AstList(elems.map(toAst));
             let isFunctionDefinition = elems.length > 0 &&
-                toAst(elems[0]) instanceof Ast.Symbol &&
-                (toAst(elems[0]) as Ast.Symbol).name === "def";
+                toAst(elems[0]) instanceof AstSymbol &&
+                (toAst(elems[0]) as AstSymbol).name === "def";
             if (isFunctionDefinition) {
                 if (elems.length === 0) {
                     throw new Error("Malformed function definition: zero elements");
@@ -142,7 +140,7 @@ export function parse(input: string): Array<Ast.Func> {
                 if (!isParams(params)) {
                     throw new Error("Malformed funtion definition: params not a symbol or list");
                 }
-                stack.push(new EvTree(new Ast.Func(funcSymbol.name, params, body)));
+                stack.push(new EvTree(new AstFunc(funcSymbol.name, params, body)));
             }
             else {         // regular case, create a list
                 stack.push(new EvTree(list));
@@ -155,7 +153,7 @@ export function parse(input: string): Array<Ast.Func> {
         }
         else if (m = SYMBOL.exec(input.substring(pos))!) {
             let name = m[0];
-            stack.push(new EvTree(new Ast.Symbol(name)));
+            stack.push(new EvTree(new AstSymbol(name)));
             pos += name.length;
         }
         else {
@@ -164,7 +162,7 @@ export function parse(input: string): Array<Ast.Func> {
         }
     }
 
-    let funcs: Array<Ast.Func> = stack.map(toFunc);
+    let funcs: Array<AstFunc> = stack.map(toFunc);
     return funcs;
 }
 
