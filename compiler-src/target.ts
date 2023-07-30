@@ -94,7 +94,8 @@ export class Target {
 
 function dump(instructions: Array<Instr>): string {
     function set(targetReg: number, rest: string): string {
-        return `%${targetReg} <- ${rest}`;
+        let leftArrow = String.fromCodePoint(8592);
+        return `%${targetReg} ${leftArrow} ${rest}`;
     }
 
     let lines: Array<string> = [];
