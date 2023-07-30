@@ -1,21 +1,15 @@
-type ActualAst = Ast;
-
 type Ev =
     Ev.OpenParen |
-    Ev.Ast |
-    Ev.Dot |
+    Ev.Tree |
     Ev.Quot;
 
 namespace Ev {
     export class OpenParen {
     }
 
-    export class Ast {
-        constructor(public ast: ActualAst) {
+    export class Tree {
+        constructor(public ast: Ast) {
         }
-    }
-
-    export class Dot {
     }
 
     export class Quot {
@@ -25,7 +19,6 @@ namespace Ev {
 export type Ast =
     Ast.Func |
     Ast.List |
-    Ast.DottedList |
     Ast.Quote |
     Ast.Symbol;
 
@@ -33,18 +26,13 @@ export namespace Ast {
     export class Func {
         constructor(
             public name: string,
-            public params: Ast.Symbol | Ast.List | Ast.DottedList,
+            public params: Ast.Symbol | Ast.List,
             public body: Array<Ast>) {
         }
     }
 
     export class List {
         constructor(public elems: Array<Ast>,) {
-        }
-    }
-
-    export class DottedList {
-        constructor(public regularElems: Array<Ast>, public lastElem: Ast) {
         }
     }
 
@@ -70,14 +58,13 @@ function isSymbol(ast: Ast): ast is Ast.Symbol {
     return ast instanceof Ast.Symbol;
 }
 
-function isParams(ast: Ast): ast is Ast.Symbol | Ast.List | Ast.DottedList {
+function isParams(ast: Ast): ast is Ast.Symbol | Ast.List {
     return ast instanceof Ast.Symbol ||
-        ast instanceof Ast.List ||
-        ast instanceof Ast.DottedList;
+        ast instanceof Ast.List;
 }
 
-function extractElems(stack: Array<Ev>): Array<Ev.Ast | Ev.Dot> {
-    let elems: Array<Ev.Ast | Ev.Dot> = [];
+function extractElems(stack: Array<Ev>): Array<Ev.Tree> {
+    let elems: Array<Ev.Tree> = [];
     while (stack.length > 0) {
         let elem = stack.pop()!;
         if (elem instanceof Ev.Quot) {
@@ -85,11 +72,8 @@ function extractElems(stack: Array<Ev>): Array<Ev.Ast | Ev.Dot> {
                 throw new Error("Quote marker without datum");
             }
             let datum = elems.shift()!;
-            if (datum instanceof Ev.Dot) {
-                throw new Error("Can't quote a dot");
-            }
             let quote = new Ast.Quote(datum.ast);
-            elems.unshift(new Ev.Ast(quote));
+            elems.unshift(new Ev.Tree(quote));
         }
         else if (elem instanceof Ev.OpenParen) {
             return elems;
@@ -102,7 +86,7 @@ function extractElems(stack: Array<Ev>): Array<Ev.Ast | Ev.Dot> {
 }
 
 function toAst(ev: Ev): Ast {
-    if (ev instanceof Ev.Ast) {
+    if (ev instanceof Ev.Tree) {
         return ev.ast;
     }
     else {
@@ -111,7 +95,7 @@ function toAst(ev: Ev): Ast {
 }
 
 function toFunc(ev: Ev): Ast.Func {
-    if (ev instanceof Ev.Ast) {
+    if (ev instanceof Ev.Tree) {
         if (ev.ast instanceof Ast.Func) {
             return ev.ast as Ast.Func;
         }
@@ -142,22 +126,7 @@ export function parse(input: string): Array<Ast.Func> {
         }
         else if (input.charAt(pos) === ")") {
             let elems = extractElems(stack);
-            let dotIndex = elems.findIndex((e) => e instanceof Ev.Dot);
-            let list: Ast.List | Ast.DottedList;
-            if (dotIndex !== -1 && dotIndex < elems.length - 2) {
-                throw new Error("Dot too early in list");
-            }
-            else if (dotIndex > elems.length - 2) {
-                throw new Error("Dot too late in list");
-            }
-            else if (dotIndex === -1) {
-                list = new Ast.List(elems.map(toAst));
-            }
-            else {  // dotIndex === elems.length - 2
-                let regularElems = elems.slice(0, dotIndex).map(toAst);
-                let lastElem = toAst(elems[elems.length - 1]);
-                list = new Ast.DottedList(regularElems, lastElem);
-            }
+            let list = new Ast.List(elems.map(toAst));
             let isFunctionDefinition = elems.length > 0 &&
                 toAst(elems[0]) instanceof Ast.Symbol &&
                 (toAst(elems[0]) as Ast.Symbol).name === "def";
@@ -175,10 +144,10 @@ export function parse(input: string): Array<Ast.Func> {
                 if (!isParams(params)) {
                     throw new Error("Malformed funtion definition: params not a symbol or list");
                 }
-                stack.push(new Ev.Ast(new Ast.Func(funcSymbol.name, params, body)));
+                stack.push(new Ev.Tree(new Ast.Func(funcSymbol.name, params, body)));
             }
             else {         // regular case, create a list
-                stack.push(new Ev.Ast(list));
+                stack.push(new Ev.Tree(list));
             }
             pos += 1;
         }
@@ -186,13 +155,9 @@ export function parse(input: string): Array<Ast.Func> {
             stack.push(new Ev.Quot());
             pos += 1;
         }
-        else if (input.charAt(pos) === ".") {
-            stack.push(new Ev.Dot());
-            pos += 1;
-        }
         else if (m = SYMBOL.exec(input.substring(pos))!) {
             let name = m[0];
-            stack.push(new Ev.Ast(new Ast.Symbol(name)));
+            stack.push(new Ev.Tree(new Ast.Symbol(name)));
             pos += name.length;
         }
         else {

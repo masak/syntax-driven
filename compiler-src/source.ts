@@ -5,7 +5,7 @@ import {
 
 export class Source {
     public name: string;
-    public params: Ast.Symbol | Ast.List | Ast.DottedList;
+    public params: Ast.Symbol | Ast.List;
     public body: Array<Ast>;
 
     constructor(contents: string) {
