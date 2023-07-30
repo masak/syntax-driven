@@ -162,9 +162,17 @@ export function compile(source: Source, env: Env): Target {
     }
     instrs.push(new InstrReturnReg(returnReg));
 
+    let req = maxReqReg === 0
+        ? "%0"
+        : `%0..%${maxReqReg}`;
+
+    let reg = returnReg === 0
+        ? "%0"
+        : `%0..%${returnReg}`;
+
     return new Target(
         source.name,
-        { req: `%0..%${maxReqReg}`, reg: `%0..%${returnReg}` },
+        { req, reg },
         instrs,
     );
 }
