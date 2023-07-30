@@ -1,19 +1,17 @@
 type Ev =
-    Ev.OpenParen |
-    Ev.Tree |
-    Ev.Quot;
+    EvOpenParen |
+    EvTree |
+    EvQuot;
 
-namespace Ev {
-    export class OpenParen {
-    }
+class EvOpenParen {
+}
 
-    export class Tree {
-        constructor(public ast: Ast) {
-        }
+class EvTree {
+    constructor(public ast: Ast) {
     }
+}
 
-    export class Quot {
-    }
+class EvQuot {
 }
 
 export type Ast =
@@ -63,19 +61,19 @@ function isParams(ast: Ast): ast is Ast.Symbol | Ast.List {
         ast instanceof Ast.List;
 }
 
-function extractElems(stack: Array<Ev>): Array<Ev.Tree> {
-    let elems: Array<Ev.Tree> = [];
+function extractElems(stack: Array<Ev>): Array<EvTree> {
+    let elems: Array<EvTree> = [];
     while (stack.length > 0) {
         let elem = stack.pop()!;
-        if (elem instanceof Ev.Quot) {
+        if (elem instanceof EvQuot) {
             if (elems.length === 0) {
                 throw new Error("Quote marker without datum");
             }
             let datum = elems.shift()!;
             let quote = new Ast.Quote(datum.ast);
-            elems.unshift(new Ev.Tree(quote));
+            elems.unshift(new EvTree(quote));
         }
-        else if (elem instanceof Ev.OpenParen) {
+        else if (elem instanceof EvOpenParen) {
             return elems;
         }
         else {
@@ -86,7 +84,7 @@ function extractElems(stack: Array<Ev>): Array<Ev.Tree> {
 }
 
 function toAst(ev: Ev): Ast {
-    if (ev instanceof Ev.Tree) {
+    if (ev instanceof EvTree) {
         return ev.ast;
     }
     else {
@@ -95,7 +93,7 @@ function toAst(ev: Ev): Ast {
 }
 
 function toFunc(ev: Ev): Ast.Func {
-    if (ev instanceof Ev.Tree) {
+    if (ev instanceof EvTree) {
         if (ev.ast instanceof Ast.Func) {
             return ev.ast as Ast.Func;
         }
@@ -121,7 +119,7 @@ export function parse(input: string): Array<Ast.Func> {
 
         let m: RegExpExecArray;
         if (input.charAt(pos) === "(") {
-            stack.push(new Ev.OpenParen());
+            stack.push(new EvOpenParen());
             pos += 1;
         }
         else if (input.charAt(pos) === ")") {
@@ -144,20 +142,20 @@ export function parse(input: string): Array<Ast.Func> {
                 if (!isParams(params)) {
                     throw new Error("Malformed funtion definition: params not a symbol or list");
                 }
-                stack.push(new Ev.Tree(new Ast.Func(funcSymbol.name, params, body)));
+                stack.push(new EvTree(new Ast.Func(funcSymbol.name, params, body)));
             }
             else {         // regular case, create a list
-                stack.push(new Ev.Tree(list));
+                stack.push(new EvTree(list));
             }
             pos += 1;
         }
         else if (input.charAt(pos) === "'") {
-            stack.push(new Ev.Quot());
+            stack.push(new EvQuot());
             pos += 1;
         }
         else if (m = SYMBOL.exec(input.substring(pos))!) {
             let name = m[0];
-            stack.push(new Ev.Tree(new Ast.Symbol(name)));
+            stack.push(new EvTree(new Ast.Symbol(name)));
             pos += name.length;
         }
         else {
