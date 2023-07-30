@@ -4,181 +4,179 @@ export interface Header {
 }
 
 export type Op =
-    Op.Params |
-    Op.SetParams |
-    Op.PrimXar |
-    Op.PrimXdr |
-    Op.PrimCar |
-    Op.PrimCdr |
-    Op.PrimIdRegSym |
-    Op.PrimJoinNilNil |
-    Op.PrimJoinRegNil |
-    Op.PrimJoinRegReg |
-    Op.PrimTypeReg |
-    Op.SetPrimCar |
-    Op.SetPrimCdr |
-    Op.SetPrimIdRegSym |
-    Op.SetPrimJoinNilNil |
-    Op.SetPrimJoinRegNil |
-    Op.SetPrimJoinRegReg |
-    Op.SetPrimTypeReg |
-    Op.SetReg |
-    Op.SetSym |
-    Op.Jmp |
-    Op.IfJmp |
-    Op.UnlessJmp |
-    Op.ArgIn |
-    Op.ArgNext |
-    Op.ArgMany |
-    Op.ArgOut |
-    Op.Apply |
-    Op.SetApply |
-    Op.ErrIf |
-    Op.SetGetGlobal |
-    Op.ReturnReg |
-    Op.ReturnIf |
-    Op.ReturnNilUnless |
-    Op.ReturnTUnless;
+    OpParams |
+    OpSetParams |
+    OpPrimXar |
+    OpPrimXdr |
+    OpPrimCar |
+    OpPrimCdr |
+    OpPrimIdRegSym |
+    OpPrimJoinNilNil |
+    OpPrimJoinRegNil |
+    OpPrimJoinRegReg |
+    OpPrimTypeReg |
+    OpSetPrimCar |
+    OpSetPrimCdr |
+    OpSetPrimIdRegSym |
+    OpSetPrimJoinNilNil |
+    OpSetPrimJoinRegNil |
+    OpSetPrimJoinRegReg |
+    OpSetPrimTypeReg |
+    OpSetReg |
+    OpSetSym |
+    OpJmp |
+    OpIfJmp |
+    OpUnlessJmp |
+    OpArgIn |
+    OpArgNext |
+    OpArgMany |
+    OpArgOut |
+    OpApply |
+    OpSetApply |
+    OpErrIf |
+    OpSetGetGlobal |
+    OpReturnReg |
+    OpReturnIf |
+    OpReturnNilUnless |
+    OpReturnTUnless;
 
-export namespace Op {
-    export class Params {
-    }
+export class OpParams {
+}
 
-    export class SetParams {
-        constructor(public targetReg: number) {
-        }
+export class OpSetParams {
+    constructor(public targetReg: number) {
     }
+}
 
-    export class PrimXar {
-    }
+export class OpPrimXar {
+}
 
-    export class PrimXdr {
-    }
+export class OpPrimXdr {
+}
 
-    export class PrimCar {
-    }
+export class OpPrimCar {
+}
 
-    export class PrimCdr {
-    }
+export class OpPrimCdr {
+}
 
-    export class PrimIdRegSym {
-    }
+export class OpPrimIdRegSym {
+}
 
-    export class PrimJoinNilNil {
-    }
+export class OpPrimJoinNilNil {
+}
 
-    export class PrimJoinRegNil {
-    }
+export class OpPrimJoinRegNil {
+}
 
-    export class PrimJoinRegReg {
-    }
+export class OpPrimJoinRegReg {
+}
 
-    export class PrimTypeReg {
-    }
+export class OpPrimTypeReg {
+}
 
-    export class SetPrimCar {
-        constructor(public targetReg: number, public pairReg: number) {
-        }
+export class OpSetPrimCar {
+    constructor(public targetReg: number, public pairReg: number) {
     }
+}
 
-    export class SetPrimCdr {
-        constructor(public targetReg: number, public pairReg: number) {
-        }
+export class OpSetPrimCdr {
+    constructor(public targetReg: number, public pairReg: number) {
     }
+}
 
-    export class SetPrimIdRegSym {
-        constructor(
-            public targetReg: number,
-            public leftReg: number,
-            public rightSym: string,
-        ) {
-        }
+export class OpSetPrimIdRegSym {
+    constructor(
+        public targetReg: number,
+        public leftReg: number,
+        public rightSym: string,
+    ) {
     }
+}
 
-    export class SetPrimJoinNilNil {
-    }
+export class OpSetPrimJoinNilNil {
+}
 
-    export class SetPrimJoinRegNil {
-    }
+export class OpSetPrimJoinRegNil {
+}
 
-    export class SetPrimJoinRegReg {
-    }
+export class OpSetPrimJoinRegReg {
+}
 
-    export class SetPrimTypeReg {
-        constructor(public targetReg: number, public objectReg: number) {
-        }
+export class OpSetPrimTypeReg {
+    constructor(public targetReg: number, public objectReg: number) {
     }
+}
 
-    export class SetReg {
-        constructor(public targetReg: number, public sourceReg: number) {
-        }
+export class OpSetReg {
+    constructor(public targetReg: number, public sourceReg: number) {
     }
+}
 
-    export class SetSym {
-        constructor(public targetReg: number, public sym: string) {
-        }
+export class OpSetSym {
+    constructor(public targetReg: number, public sym: string) {
     }
+}
 
-    export class Jmp {
-        constructor(public label: number) {
-        }
+export class OpJmp {
+    constructor(public label: number) {
     }
+}
 
-    export class IfJmp {
-    }
+export class OpIfJmp {
+}
 
-    export class UnlessJmp {
-        constructor(public testReg: number, public label: number) {
-        }
+export class OpUnlessJmp {
+    constructor(public testReg: number, public label: number) {
     }
+}
 
-    export class ArgIn {
-    }
+export class OpArgIn {
+}
 
-    export class ArgNext {
-        constructor(public register: number) {
-        }
+export class OpArgNext {
+    constructor(public register: number) {
     }
+}
 
-    export class ArgMany {
-        constructor(public register: number) {
-        }
+export class OpArgMany {
+    constructor(public register: number) {
     }
+}
 
-    export class ArgOut {
-    }
+export class OpArgOut {
+}
 
-    export class Apply {
-    }
+export class OpApply {
+}
 
-    export class SetApply {
-        constructor(public targetReg: number, public funcReg: number) {
-        }
+export class OpSetApply {
+    constructor(public targetReg: number, public funcReg: number) {
     }
+}
 
-    export class ErrIf {
-        constructor(public testReg: number, public errorMessage: string) {
-        }
+export class OpErrIf {
+    constructor(public testReg: number, public errorMessage: string) {
     }
+}
 
-    export class SetGetGlobal {
-        constructor(public targetReg: number, public name: string) {
-        }
+export class OpSetGetGlobal {
+    constructor(public targetReg: number, public name: string) {
     }
+}
 
-    export class ReturnReg {
-        constructor(public returnReg: number) {
-        }
+export class OpReturnReg {
+    constructor(public returnReg: number) {
     }
+}
 
-    export class ReturnIf {
-    }
+export class OpReturnIf {
+}
 
-    export class ReturnNilUnless {
-    }
+export class OpReturnNilUnless {
+}
 
-    export class ReturnTUnless {
-    }
+export class OpReturnTUnless {
 }
 
 export class Target {
@@ -197,68 +195,68 @@ function dump(ops: Array<Op>): string {
 
     let jumpTargetLines = new Set<number>();
     for (let op of ops) {
-        if (op instanceof Op.Jmp) {
+        if (op instanceof OpJmp) {
             jumpTargetLines.add(op.label);
         }
-        else if (op instanceof Op.IfJmp) {
+        else if (op instanceof OpIfJmp) {
             throw new Error("Need to support IfJmp, too");
         }
-        else if (op instanceof Op.UnlessJmp) {
+        else if (op instanceof OpUnlessJmp) {
             jumpTargetLines.add(op.label);
         }
     }
     let lines: Array<string> = [];
     for (let op of ops) {
         let line: string;
-        if (op instanceof Op.SetParams) {
+        if (op instanceof OpSetParams) {
             line = set(op.targetReg, "params");
         }
-        else if (op instanceof Op.SetPrimCar) {
+        else if (op instanceof OpSetPrimCar) {
             line = set(op.targetReg, `(car %${op.pairReg})`);
         }
-        else if (op instanceof Op.SetPrimCdr) {
+        else if (op instanceof OpSetPrimCdr) {
             line = set(op.targetReg, `(cdr %${op.pairReg})`);
         }
-        else if (op instanceof Op.SetPrimIdRegSym) {
+        else if (op instanceof OpSetPrimIdRegSym) {
             line = set(op.targetReg, `(id %${op.leftReg} ${op.rightSym})`);
         }
-        else if (op instanceof Op.SetPrimTypeReg) {
+        else if (op instanceof OpSetPrimTypeReg) {
             line = set(op.targetReg, `(type %${op.objectReg})`);
         }
-        else if (op instanceof Op.SetSym) {
+        else if (op instanceof OpSetSym) {
             line = set(op.targetReg, `(sym '${op.sym})`);
         }
-        else if (op instanceof Op.SetReg) {
+        else if (op instanceof OpSetReg) {
             line = set(op.targetReg, `%${op.sourceReg}`);
         }
-        else if (op instanceof Op.ArgIn) {
+        else if (op instanceof OpArgIn) {
             line = "(arg-in)";
         }
-        else if (op instanceof Op.ArgNext) {
+        else if (op instanceof OpArgNext) {
             line = `(arg-next %${op.register})`;
         }
-        else if (op instanceof Op.ArgMany) {
+        else if (op instanceof OpArgMany) {
             line = `(arg-many %${op.register})`;
         }
-        else if (op instanceof Op.ArgOut) {
+        else if (op instanceof OpArgOut) {
             line = "(arg-out)";
         }
-        else if (op instanceof Op.SetApply) {
+        else if (op instanceof OpSetApply) {
             line = set(op.targetReg, `(apply %${op.funcReg})`);
         }
-        else if (op instanceof Op.SetGetGlobal) {
+        else if (op instanceof OpSetGetGlobal) {
             line = set(op.targetReg, `(get-global "${op.name}")`);
         }
-        else if (op instanceof Op.ErrIf) {
+        else if (op instanceof OpErrIf) {
             line = `(err-if %${op.testReg} "${op.errorMessage}")`;
         }
-        else if (op instanceof Op.ReturnReg) {
+        else if (op instanceof OpReturnReg) {
             line = `(return %${op.returnReg})`;
         }
-        else if (op instanceof Op.Jmp) {
+        else if (op instanceof OpJmp) {
             line = `(jmp ${op.label})`;
         }
-        else if (op instanceof Op.UnlessJmp) {
+        else if (op instanceof OpUnlessJmp) {
             line = `(unless-jmp %${op.testReg} ${op.label})`;
         }
         else {

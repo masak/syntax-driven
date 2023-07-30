@@ -12,6 +12,23 @@ import {
 } from "./parse-source";
 import {
     Op,
+    OpSetParams,
+    OpSetPrimCar,
+    OpSetPrimCdr,
+    OpSetPrimIdRegSym,
+    OpSetPrimTypeReg,
+    OpSetReg,
+    OpSetSym,
+    OpJmp,
+    OpUnlessJmp,
+    OpArgIn,
+    OpArgNext,
+    OpArgMany,
+    OpArgOut,
+    OpSetApply,
+    OpErrIf,
+    OpSetGetGlobal,
+    OpReturnReg,
     Target,
 } from "./target";
 
@@ -42,23 +59,23 @@ export function compile(source: Source, env: Env): Target {
     // param handling
     if (source.params instanceof AstList) {
         let currentReg = nextReg();
-        ops.push(new Op.SetParams(currentReg));
+        ops.push(new OpSetParams(currentReg));
         for (let param of source.params.elems) {
             if (!(param instanceof AstSymbol)) {
                 throw new Error("non-symbol parameter -- todo");
             }
             let paramReg = nextReg();
             registerMap.set(param.name, paramReg);
-            ops.push(new Op.SetPrimCar(paramReg, currentReg));
+            ops.push(new OpSetPrimCar(paramReg, currentReg));
             let cdrReg = nextReg();
-            ops.push(new Op.SetPrimCdr(cdrReg, currentReg));
+            ops.push(new OpSetPrimCdr(cdrReg, currentReg));
             currentReg = cdrReg;
         }
-        ops.push(new Op.ErrIf(currentReg, "overargs"));
+        ops.push(new OpErrIf(currentReg, "overargs"));
     }
     else if (source.params instanceof AstSymbol) {
         let paramReg = nextReg();
-        ops.push(new Op.SetParams(paramReg));
+        ops.push(new OpSetParams(paramReg));
         registerMap.set(source.params.name, paramReg);
     }
 
@@ -67,7 +84,7 @@ export function compile(source: Source, env: Env): Target {
         if (ast instanceof AstSymbol && qSym(ast) !== null) {
             let sym = qSym(ast)!;
             let symReg = nextReg();
-            ops.push(new Op.SetSym(symReg, sym));
+            ops.push(new OpSetSym(symReg, sym));
             return symReg;
         }
         else if (ast instanceof AstSymbol) {
@@ -77,7 +94,7 @@ export function compile(source: Source, env: Env): Target {
             }
             else if (env.has(name)) {
                 let globalReg = nextReg();
-                ops.push(new Op.SetGetGlobal(globalReg, name));
+                ops.push(new OpSetGetGlobal(globalReg, name));
                 return globalReg;
             }
             throw new Error(`Unrecognized variable: '${name}'`);
@@ -102,7 +119,7 @@ export function compile(source: Source, env: Env): Target {
                 if (!qSym(r1) && r2Sym !== null) {
                     let r1r = handle(r1);
                     let targetReg = nextReg();
-                    ops.push(new Op.SetPrimIdRegSym(targetReg, r1r, r2Sym));
+                    ops.push(new OpSetPrimIdRegSym(targetReg, r1r, r2Sym));
                     return targetReg;
                 }
                 else {
@@ -116,7 +133,7 @@ export function compile(source: Source, env: Env): Target {
                 let r1 = args[0];
                 let r1r = handle(r1);
                 let targetReg = nextReg();
-                ops.push(new Op.SetPrimTypeReg(targetReg, r1r));
+                ops.push(new OpSetPrimTypeReg(targetReg, r1r));
                 return targetReg;
             }
             else if (opName === "car") {
@@ -126,7 +143,7 @@ export function compile(source: Source, env: Env): Target {
                 let r1 = args[0];
                 let r1r = handle(r1);
                 let targetReg = nextReg();
-                ops.push(new Op.SetPrimCar(targetReg, r1r));
+                ops.push(new OpSetPrimCar(targetReg, r1r));
                 return targetReg;
             }
             else if (opName === "cdr") {
@@ -136,7 +153,7 @@ export function compile(source: Source, env: Env): Target {
                 let r1 = args[0];
                 let r1r = handle(r1);
                 let targetReg = nextReg();
-                ops.push(new Op.SetPrimCdr(targetReg, r1r));
+                ops.push(new OpSetPrimCdr(targetReg, r1r));
                 return targetReg;
             }
             else if (opName === "if") {
@@ -146,37 +163,37 @@ export function compile(source: Source, env: Env): Target {
                     let test = args[i];
                     let rTest = handle(test);
                     let nextJumpFixupIndex = ops.length;
-                    ops.push(new Op.UnlessJmp(rTest, NOT_YET_KNOWN));
+                    ops.push(new OpUnlessJmp(rTest, NOT_YET_KNOWN));
                     let consequent = args[i + 1];
                     let rConsequent = handle(consequent);
                     let registerFixupIndex = ops.length;
                     registerFixupIndices.push(registerFixupIndex);
-                    ops.push(new Op.SetReg(NOT_YET_KNOWN, rConsequent));
+                    ops.push(new OpSetReg(NOT_YET_KNOWN, rConsequent));
                     let endJumpFixupIndex = ops.length;
                     endJumpFixupIndices.push(endJumpFixupIndex);
-                    ops.push(new Op.Jmp(NOT_YET_KNOWN));
+                    ops.push(new OpJmp(NOT_YET_KNOWN));
                     let nextJumpIndex = ops.length;
                     ops[nextJumpFixupIndex] =
-                        new Op.UnlessJmp(rTest, nextJumpIndex);
+                        new OpUnlessJmp(rTest, nextJumpIndex);
                 }
                 if (args.length % 2 !== 0) {
                     let consequent = args[args.length - 1];
                     let rConsequent = handle(consequent);
                     let registerFixupIndex = ops.length;
                     registerFixupIndices.push(registerFixupIndex);
-                    ops.push(new Op.SetReg(NOT_YET_KNOWN, rConsequent));
+                    ops.push(new OpSetReg(NOT_YET_KNOWN, rConsequent));
                 }
                 let resultRegister = nextReg();
                 for (let index of registerFixupIndices) {
                     let instr = ops[index];
-                    if (!(instr instanceof Op.SetReg)) {
+                    if (!(instr instanceof OpSetReg)) {
                         throw new Error("Invariant broken: not a SetReg");
                     }
                     instr.targetReg = resultRegister;
                 }
                 let endIndex = ops.length;
                 for (let index of endJumpFixupIndices) {
-                    ops[index] = new Op.Jmp(endIndex);
+                    ops[index] = new OpJmp(endIndex);
                 }
                 return resultRegister;
             }
@@ -190,39 +207,39 @@ export function compile(source: Source, env: Env): Target {
                 let rFunc = handle(func);
                 let rFirstArgs = firstArgs.map(handle);
                 let rLastArg = handle(lastArg);
-                ops.push(new Op.ArgIn());
+                ops.push(new OpArgIn());
                 for (let reg of rFirstArgs) {
-                    ops.push(new Op.ArgNext(reg));
+                    ops.push(new OpArgNext(reg));
                 }
-                ops.push(new Op.ArgMany(rLastArg));
-                ops.push(new Op.ArgOut());
+                ops.push(new OpArgMany(rLastArg));
+                ops.push(new OpArgOut());
                 let targetReg = nextReg();
-                ops.push(new Op.SetApply(targetReg, rFunc));
+                ops.push(new OpSetApply(targetReg, rFunc));
                 return targetReg;
             }
             else if (registerMap.has(opName)) {
                 let funcReg = registerMap.get(opName)!;
                 let argRegs = args.map(handle);
-                ops.push(new Op.ArgIn());
+                ops.push(new OpArgIn());
                 for (let reg of argRegs) {
-                    ops.push(new Op.ArgNext(reg));
+                    ops.push(new OpArgNext(reg));
                 }
-                ops.push(new Op.ArgOut());
+                ops.push(new OpArgOut());
                 let targetReg = nextReg();
-                ops.push(new Op.SetApply(targetReg, funcReg));
+                ops.push(new OpSetApply(targetReg, funcReg));
                 return targetReg;
             }
             else if (env.has(opName)) {
                 let funcReg = nextReg();
-                ops.push(new Op.SetGetGlobal(funcReg, opName));
+                ops.push(new OpSetGetGlobal(funcReg, opName));
                 let argRegs = args.map(handle);
-                ops.push(new Op.ArgIn());
+                ops.push(new OpArgIn());
                 for (let reg of argRegs) {
-                    ops.push(new Op.ArgNext(reg));
+                    ops.push(new OpArgNext(reg));
                 }
-                ops.push(new Op.ArgOut());
+                ops.push(new OpArgOut());
                 let targetReg = nextReg();
-                ops.push(new Op.SetApply(targetReg, funcReg));
+                ops.push(new OpSetApply(targetReg, funcReg));
                 return targetReg;
             }
             else {
@@ -238,7 +255,7 @@ export function compile(source: Source, env: Env): Target {
     for (let statement of source.body) {
         returnReg = handle(statement);
     }
-    ops.push(new Op.ReturnReg(returnReg));
+    ops.push(new OpReturnReg(returnReg));
 
     let reqHigh = source.params instanceof AstList
         ? source.params.elems.length - 1
