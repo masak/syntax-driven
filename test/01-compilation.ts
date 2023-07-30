@@ -24,7 +24,7 @@ test("compiling 'no'", (t) => {
     let expectedTarget = stringifyTarget(target);
     let actualTarget = stringifyTarget(compile(source, emptyEnv));
 
-    t.deepEqual(expectedTarget, actualTarget);
+    t.deepEqual(actualTarget, expectedTarget);
 });
 
 test("compiling 'atom'", (t) => {
@@ -38,6 +38,6 @@ test("compiling 'atom'", (t) => {
 
     let actualTarget = stringifyTarget(compile(source, envAfterNo));
 
-    t.deepEqual(expectedTarget, actualTarget);
+    t.deepEqual(actualTarget, expectedTarget);
 });
 
