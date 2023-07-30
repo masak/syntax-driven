@@ -4,9 +4,6 @@ export interface Header {
 }
 
 export type Instr =
-    InstrSetParams |
-    InstrSetPrimCar |
-    InstrSetPrimCdr |
     InstrSetPrimIdRegSym |
     InstrSetPrimTypeReg |
     InstrSetSym |
@@ -14,24 +11,8 @@ export type Instr =
     InstrArgNext |
     InstrArgOut |
     InstrSetApply |
-    InstrErrIf |
     InstrSetGetGlobal |
     InstrReturnReg;
-
-export class InstrSetParams {
-    constructor(public targetReg: number) {
-    }
-}
-
-export class InstrSetPrimCar {
-    constructor(public targetReg: number, public pairReg: number) {
-    }
-}
-
-export class InstrSetPrimCdr {
-    constructor(public targetReg: number, public pairReg: number) {
-    }
-}
 
 export class InstrSetPrimIdRegSym {
     constructor(
@@ -68,11 +49,6 @@ export class InstrSetApply {
     }
 }
 
-export class InstrErrIf {
-    constructor(public testReg: number, public errorMessage: string) {
-    }
-}
-
 export class InstrSetGetGlobal {
     constructor(public targetReg: number, public name: string) {
     }
@@ -101,16 +77,7 @@ function dump(instructions: Array<Instr>): string {
     let lines: Array<string> = [];
     for (let instr of instructions) {
         let line: string;
-        if (instr instanceof InstrSetParams) {
-            line = set(instr.targetReg, "params");
-        }
-        else if (instr instanceof InstrSetPrimCar) {
-            line = set(instr.targetReg, `(car %${instr.pairReg})`);
-        }
-        else if (instr instanceof InstrSetPrimCdr) {
-            line = set(instr.targetReg, `(cdr %${instr.pairReg})`);
-        }
-        else if (instr instanceof InstrSetPrimIdRegSym) {
+        if (instr instanceof InstrSetPrimIdRegSym) {
             line = set(
                 instr.targetReg,
                 `(id %${instr.leftReg} ${instr.rightSym})`,
@@ -136,9 +103,6 @@ function dump(instructions: Array<Instr>): string {
         }
         else if (instr instanceof InstrSetGetGlobal) {
             line = set(instr.targetReg, `(get-global "${instr.name}")`);
-        }
-        else if (instr instanceof InstrErrIf) {
-            line = `(err-if %${instr.testReg} "${instr.errorMessage}")`;
         }
         else if (instr instanceof InstrReturnReg) {
             line = `(return %${instr.returnReg})`;

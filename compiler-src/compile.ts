@@ -12,9 +12,6 @@ import {
 } from "./parse-source";
 import {
     Instr,
-    InstrSetParams,
-    InstrSetPrimCar,
-    InstrSetPrimCdr,
     InstrSetPrimIdRegSym,
     InstrSetPrimTypeReg,
     InstrSetSym,
@@ -22,7 +19,6 @@ import {
     InstrArgNext,
     InstrArgOut,
     InstrSetApply,
-    InstrErrIf,
     InstrSetGetGlobal,
     InstrReturnReg,
     Target,
@@ -50,27 +46,21 @@ export function compile(source: Source, env: Env): Target {
 
     let instrs: Array<Instr> = [];
     let registerMap: Map<string, Register> = new Map();
+    let maxReqReg = -1;
+
     // param handling
     if (source.params instanceof AstList) {
-        let currentReg = nextReg();
-        instrs.push(new InstrSetParams(currentReg));
         for (let param of source.params.elems) {
             if (!(param instanceof AstSymbol)) {
                 throw new Error("non-symbol parameter -- todo");
             }
             let paramReg = nextReg();
             registerMap.set(param.name, paramReg);
-            instrs.push(new InstrSetPrimCar(paramReg, currentReg));
-            let cdrReg = nextReg();
-            instrs.push(new InstrSetPrimCdr(cdrReg, currentReg));
-            currentReg = cdrReg;
+            maxReqReg = paramReg;
         }
-        instrs.push(new InstrErrIf(currentReg, "overargs"));
     }
     else if (source.params instanceof AstSymbol) {
-        let paramReg = nextReg();
-        instrs.push(new InstrSetParams(paramReg));
-        registerMap.set(source.params.name, paramReg);
+        throw new Error("rest parameter -- todo");
     }
 
     // body
@@ -172,13 +162,9 @@ export function compile(source: Source, env: Env): Target {
     }
     instrs.push(new InstrReturnReg(returnReg));
 
-    let reqHigh = source.params instanceof AstList
-        ? source.params.elems.length - 1
-        : 0;
-
     return new Target(
         source.name,
-        { req: `%0..%${reqHigh}`, reg: `%0..%${unusedReg - 1}` },
+        { req: `%0..%${maxReqReg}`, reg: `%0..%${returnReg}` },
         instrs,
     );
 }
