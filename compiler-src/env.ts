@@ -14,12 +14,9 @@ export class Env {
 
     install(source: Source) {
         let target = compile(source, this);
-        return new Env(
-            new Map([
-                ...this.bindings.entries(),
-                [target.name, target],
-            ]),
-        );
+        let newBindings = new Map(this.bindings);
+        newBindings.set(target.name, target);
+        return new Env(newBindings);
     }
 }
 
