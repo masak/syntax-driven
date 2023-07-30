@@ -9,10 +9,14 @@ export class Target {
         public header: Header,
         public body: string,
     ) {
+        this.body = this.body
+            .replace(/^\s+/, "")
+            .replace(/\s+$/, "");
     }
 }
 
-export function stringifyTarget(target: Target): string {
-    return "<this string intentionally left empty>";
+export function stringifyTarget({ name, header, body }: Target): string {
+    let headerDesc = `[req: ${header.req}; reg: ${header.reg}]`;
+    return `bcfn ${name} ${headerDesc}` + "\n" + body;
 }
 
