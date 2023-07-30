@@ -7,9 +7,9 @@ export type Instr =
     InstrSetPrimIdRegSym |
     InstrSetPrimTypeReg |
     InstrSetSym |
-    InstrArgIn |
-    InstrArgNext |
-    InstrArgOut |
+    InstrArgsStart |
+    InstrArgOne |
+    InstrArgsEnd |
     InstrSetApply |
     InstrSetGetGlobal |
     InstrReturnReg;
@@ -33,15 +33,15 @@ export class InstrSetSym {
     }
 }
 
-export class InstrArgIn {
+export class InstrArgsStart {
 }
 
-export class InstrArgNext {
+export class InstrArgOne {
     constructor(public register: number) {
     }
 }
 
-export class InstrArgOut {
+export class InstrArgsEnd {
 }
 
 export class InstrSetApply {
@@ -89,14 +89,14 @@ function dump(instructions: Array<Instr>): string {
         else if (instr instanceof InstrSetSym) {
             line = set(instr.targetReg, `(sym '${instr.sym})`);
         }
-        else if (instr instanceof InstrArgIn) {
-            line = "(arg-in)";
+        else if (instr instanceof InstrArgsStart) {
+            line = "(args-start)";
         }
-        else if (instr instanceof InstrArgNext) {
-            line = `(arg-next %${instr.register})`;
+        else if (instr instanceof InstrArgOne) {
+            line = `  (arg-one %${instr.register})`;
         }
-        else if (instr instanceof InstrArgOut) {
-            line = "(arg-out)";
+        else if (instr instanceof InstrArgsEnd) {
+            line = "(args-end)";
         }
         else if (instr instanceof InstrSetApply) {
             line = set(instr.targetReg, `(apply %${instr.funcReg})`);

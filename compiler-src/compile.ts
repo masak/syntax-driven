@@ -15,9 +15,9 @@ import {
     InstrSetPrimIdRegSym,
     InstrSetPrimTypeReg,
     InstrSetSym,
-    InstrArgIn,
-    InstrArgNext,
-    InstrArgOut,
+    InstrArgsStart,
+    InstrArgOne,
+    InstrArgsEnd,
     InstrSetApply,
     InstrSetGetGlobal,
     InstrReturnReg,
@@ -125,11 +125,11 @@ export function compile(source: Source, env: Env): Target {
             else if (registerMap.has(opName)) {
                 let funcReg = registerMap.get(opName)!;
                 let argRegs = args.map(handle);
-                instrs.push(new InstrArgIn());
+                instrs.push(new InstrArgsStart());
                 for (let reg of argRegs) {
-                    instrs.push(new InstrArgNext(reg));
+                    instrs.push(new InstrArgOne(reg));
                 }
-                instrs.push(new InstrArgOut());
+                instrs.push(new InstrArgsEnd());
                 let targetReg = nextReg();
                 instrs.push(new InstrSetApply(targetReg, funcReg));
                 return targetReg;
@@ -138,11 +138,11 @@ export function compile(source: Source, env: Env): Target {
                 let funcReg = nextReg();
                 instrs.push(new InstrSetGetGlobal(funcReg, opName));
                 let argRegs = args.map(handle);
-                instrs.push(new InstrArgIn());
+                instrs.push(new InstrArgsStart());
                 for (let reg of argRegs) {
-                    instrs.push(new InstrArgNext(reg));
+                    instrs.push(new InstrArgOne(reg));
                 }
-                instrs.push(new InstrArgOut());
+                instrs.push(new InstrArgsEnd());
                 let targetReg = nextReg();
                 instrs.push(new InstrSetApply(targetReg, funcReg));
                 return targetReg;
