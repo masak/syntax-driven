@@ -4,75 +4,27 @@ export interface Header {
 }
 
 export type Op =
-    OpParams |
     OpSetParams |
-    OpPrimXar |
-    OpPrimXdr |
-    OpPrimCar |
-    OpPrimCdr |
-    OpPrimIdRegSym |
-    OpPrimJoinNilNil |
-    OpPrimJoinRegNil |
-    OpPrimJoinRegReg |
-    OpPrimTypeReg |
     OpSetPrimCar |
     OpSetPrimCdr |
     OpSetPrimIdRegSym |
-    OpSetPrimJoinNilNil |
-    OpSetPrimJoinRegNil |
-    OpSetPrimJoinRegReg |
     OpSetPrimTypeReg |
     OpSetReg |
     OpSetSym |
     OpJmp |
-    OpIfJmp |
     OpUnlessJmp |
     OpArgIn |
     OpArgNext |
     OpArgMany |
     OpArgOut |
-    OpApply |
     OpSetApply |
     OpErrIf |
     OpSetGetGlobal |
-    OpReturnReg |
-    OpReturnIf |
-    OpReturnNilUnless |
-    OpReturnTUnless;
-
-export class OpParams {
-}
+    OpReturnReg;
 
 export class OpSetParams {
     constructor(public targetReg: number) {
     }
-}
-
-export class OpPrimXar {
-}
-
-export class OpPrimXdr {
-}
-
-export class OpPrimCar {
-}
-
-export class OpPrimCdr {
-}
-
-export class OpPrimIdRegSym {
-}
-
-export class OpPrimJoinNilNil {
-}
-
-export class OpPrimJoinRegNil {
-}
-
-export class OpPrimJoinRegReg {
-}
-
-export class OpPrimTypeReg {
 }
 
 export class OpSetPrimCar {
@@ -94,15 +46,6 @@ export class OpSetPrimIdRegSym {
     }
 }
 
-export class OpSetPrimJoinNilNil {
-}
-
-export class OpSetPrimJoinRegNil {
-}
-
-export class OpSetPrimJoinRegReg {
-}
-
 export class OpSetPrimTypeReg {
     constructor(public targetReg: number, public objectReg: number) {
     }
@@ -121,9 +64,6 @@ export class OpSetSym {
 export class OpJmp {
     constructor(public label: number) {
     }
-}
-
-export class OpIfJmp {
 }
 
 export class OpUnlessJmp {
@@ -147,9 +87,6 @@ export class OpArgMany {
 export class OpArgOut {
 }
 
-export class OpApply {
-}
-
 export class OpSetApply {
     constructor(public targetReg: number, public funcReg: number) {
     }
@@ -168,15 +105,6 @@ export class OpSetGetGlobal {
 export class OpReturnReg {
     constructor(public returnReg: number) {
     }
-}
-
-export class OpReturnIf {
-}
-
-export class OpReturnNilUnless {
-}
-
-export class OpReturnTUnless {
 }
 
 export class Target {
@@ -198,9 +126,7 @@ function dump(ops: Array<Op>): string {
         if (op instanceof OpJmp) {
             jumpTargetLines.add(op.label);
         }
-        else if (op instanceof OpIfJmp) {
-            throw new Error("Need to support IfJmp, too");
-        }
+        /* need to support if-jmp, too */
         else if (op instanceof OpUnlessJmp) {
             jumpTargetLines.add(op.label);
         }
@@ -260,7 +186,8 @@ function dump(ops: Array<Op>): string {
             line = `(unless-jmp %${op.testReg} ${op.label})`;
         }
         else {
-            throw new Error(`Unrecognized op (in dump): ${op.constructor.name}`);
+            let _coverageCheck: never = op;
+            return _coverageCheck;
         }
         let lineLabel = lines.length;
         if (jumpTargetLines.has(lineLabel)) {
