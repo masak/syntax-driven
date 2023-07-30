@@ -17,13 +17,9 @@ import {
     InstrSetPrimCdr,
     InstrSetPrimIdRegSym,
     InstrSetPrimTypeReg,
-    InstrSetReg,
     InstrSetSym,
-    InstrJmp,
-    InstrUnlessJmp,
     InstrArgIn,
     InstrArgNext,
-    InstrArgMany,
     InstrArgOut,
     InstrSetApply,
     InstrErrIf,
@@ -45,8 +41,6 @@ function qSym(ast: Ast): string | null {
 }
 
 type Register = number;
-
-const NOT_YET_KNOWN = -1;
 
 export function compile(source: Source, env: Env): Target {
     let unusedReg = 0;
@@ -136,87 +130,6 @@ export function compile(source: Source, env: Env): Target {
                 let r1r = handle(r1);
                 let targetReg = nextReg();
                 instrs.push(new InstrSetPrimTypeReg(targetReg, r1r));
-                return targetReg;
-            }
-            else if (opName === "car") {
-                if (args.length < 1) {
-                    throw new Error("Not enough operands for 'car'");
-                }
-                let r1 = args[0];
-                let r1r = handle(r1);
-                let targetReg = nextReg();
-                instrs.push(new InstrSetPrimCar(targetReg, r1r));
-                return targetReg;
-            }
-            else if (opName === "cdr") {
-                if (args.length < 1) {
-                    throw new Error("Not enough operands for 'cdr'");
-                }
-                let r1 = args[0];
-                let r1r = handle(r1);
-                let targetReg = nextReg();
-                instrs.push(new InstrSetPrimCdr(targetReg, r1r));
-                return targetReg;
-            }
-            else if (opName === "if") {
-                let registerFixupIndices = [];
-                let endJumpFixupIndices = [];
-                for (let i = 0; i < args.length - 1; i += 2) {
-                    let test = args[i];
-                    let rTest = handle(test);
-                    let nextJumpFixupIndex = instrs.length;
-                    instrs.push(new InstrUnlessJmp(rTest, NOT_YET_KNOWN));
-                    let consequent = args[i + 1];
-                    let rConsequent = handle(consequent);
-                    let registerFixupIndex = instrs.length;
-                    registerFixupIndices.push(registerFixupIndex);
-                    instrs.push(new InstrSetReg(NOT_YET_KNOWN, rConsequent));
-                    let endJumpFixupIndex = instrs.length;
-                    endJumpFixupIndices.push(endJumpFixupIndex);
-                    instrs.push(new InstrJmp(NOT_YET_KNOWN));
-                    let nextJumpIndex = instrs.length;
-                    instrs[nextJumpFixupIndex] =
-                        new InstrUnlessJmp(rTest, nextJumpIndex);
-                }
-                if (args.length % 2 !== 0) {
-                    let consequent = args[args.length - 1];
-                    let rConsequent = handle(consequent);
-                    let registerFixupIndex = instrs.length;
-                    registerFixupIndices.push(registerFixupIndex);
-                    instrs.push(new InstrSetReg(NOT_YET_KNOWN, rConsequent));
-                }
-                let resultRegister = nextReg();
-                for (let index of registerFixupIndices) {
-                    let instr = instrs[index];
-                    if (!(instr instanceof InstrSetReg)) {
-                        throw new Error("Invariant broken: not a SetReg");
-                    }
-                    instr.targetReg = resultRegister;
-                }
-                let endIndex = instrs.length;
-                for (let index of endJumpFixupIndices) {
-                    instrs[index] = new InstrJmp(endIndex);
-                }
-                return resultRegister;
-            }
-            else if (opName === "apply") {
-                if (args.length < 2) {
-                    throw new Error("Not enough operands for 'apply'");
-                }
-                let [func, ...applyArgs] = args;
-                let firstArgs = applyArgs.slice(0, applyArgs.length - 1);
-                let lastArg = applyArgs[applyArgs.length - 1];
-                let rFunc = handle(func);
-                let rFirstArgs = firstArgs.map(handle);
-                let rLastArg = handle(lastArg);
-                instrs.push(new InstrArgIn());
-                for (let reg of rFirstArgs) {
-                    instrs.push(new InstrArgNext(reg));
-                }
-                instrs.push(new InstrArgMany(rLastArg));
-                instrs.push(new InstrArgOut());
-                let targetReg = nextReg();
-                instrs.push(new InstrSetApply(targetReg, rFunc));
                 return targetReg;
             }
             else if (registerMap.has(opName)) {
