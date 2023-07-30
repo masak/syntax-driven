@@ -3,41 +3,41 @@ export interface Header {
     reg: string;
 }
 
-export type Op =
-    OpSetParams |
-    OpSetPrimCar |
-    OpSetPrimCdr |
-    OpSetPrimIdRegSym |
-    OpSetPrimTypeReg |
-    OpSetReg |
-    OpSetSym |
-    OpJmp |
-    OpUnlessJmp |
-    OpArgIn |
-    OpArgNext |
-    OpArgMany |
-    OpArgOut |
-    OpSetApply |
-    OpErrIf |
-    OpSetGetGlobal |
-    OpReturnReg;
+export type Instr =
+    InstrSetParams |
+    InstrSetPrimCar |
+    InstrSetPrimCdr |
+    InstrSetPrimIdRegSym |
+    InstrSetPrimTypeReg |
+    InstrSetReg |
+    InstrSetSym |
+    InstrJmp |
+    InstrUnlessJmp |
+    InstrArgIn |
+    InstrArgNext |
+    InstrArgMany |
+    InstrArgOut |
+    InstrSetApply |
+    InstrErrIf |
+    InstrSetGetGlobal |
+    InstrReturnReg;
 
-export class OpSetParams {
+export class InstrSetParams {
     constructor(public targetReg: number) {
     }
 }
 
-export class OpSetPrimCar {
+export class InstrSetPrimCar {
     constructor(public targetReg: number, public pairReg: number) {
     }
 }
 
-export class OpSetPrimCdr {
+export class InstrSetPrimCdr {
     constructor(public targetReg: number, public pairReg: number) {
     }
 }
 
-export class OpSetPrimIdRegSym {
+export class InstrSetPrimIdRegSym {
     constructor(
         public targetReg: number,
         public leftReg: number,
@@ -46,63 +46,63 @@ export class OpSetPrimIdRegSym {
     }
 }
 
-export class OpSetPrimTypeReg {
+export class InstrSetPrimTypeReg {
     constructor(public targetReg: number, public objectReg: number) {
     }
 }
 
-export class OpSetReg {
+export class InstrSetReg {
     constructor(public targetReg: number, public sourceReg: number) {
     }
 }
 
-export class OpSetSym {
+export class InstrSetSym {
     constructor(public targetReg: number, public sym: string) {
     }
 }
 
-export class OpJmp {
+export class InstrJmp {
     constructor(public label: number) {
     }
 }
 
-export class OpUnlessJmp {
+export class InstrUnlessJmp {
     constructor(public testReg: number, public label: number) {
     }
 }
 
-export class OpArgIn {
+export class InstrArgIn {
 }
 
-export class OpArgNext {
+export class InstrArgNext {
     constructor(public register: number) {
     }
 }
 
-export class OpArgMany {
+export class InstrArgMany {
     constructor(public register: number) {
     }
 }
 
-export class OpArgOut {
+export class InstrArgOut {
 }
 
-export class OpSetApply {
+export class InstrSetApply {
     constructor(public targetReg: number, public funcReg: number) {
     }
 }
 
-export class OpErrIf {
+export class InstrErrIf {
     constructor(public testReg: number, public errorMessage: string) {
     }
 }
 
-export class OpSetGetGlobal {
+export class InstrSetGetGlobal {
     constructor(public targetReg: number, public name: string) {
     }
 }
 
-export class OpReturnReg {
+export class InstrReturnReg {
     constructor(public returnReg: number) {
     }
 }
@@ -111,82 +111,85 @@ export class Target {
     constructor(
         public name: string,
         public header: Header,
-        public body: Array<Op>,
+        public body: Array<Instr>,
     ) {
     }
 }
 
-function dump(ops: Array<Op>): string {
+function dump(instructions: Array<Instr>): string {
     function set(targetReg: number, rest: string): string {
         return `%${targetReg} <- ${rest}`;
     }
 
     let jumpTargetLines = new Set<number>();
-    for (let op of ops) {
-        if (op instanceof OpJmp) {
-            jumpTargetLines.add(op.label);
+    for (let instr of instructions) {
+        if (instr instanceof InstrJmp) {
+            jumpTargetLines.add(instr.label);
         }
         /* need to support if-jmp, too */
-        else if (op instanceof OpUnlessJmp) {
-            jumpTargetLines.add(op.label);
+        else if (instr instanceof InstrUnlessJmp) {
+            jumpTargetLines.add(instr.label);
         }
     }
     let lines: Array<string> = [];
-    for (let op of ops) {
+    for (let instr of instructions) {
         let line: string;
-        if (op instanceof OpSetParams) {
-            line = set(op.targetReg, "params");
+        if (instr instanceof InstrSetParams) {
+            line = set(instr.targetReg, "params");
         }
-        else if (op instanceof OpSetPrimCar) {
-            line = set(op.targetReg, `(car %${op.pairReg})`);
+        else if (instr instanceof InstrSetPrimCar) {
+            line = set(instr.targetReg, `(car %${instr.pairReg})`);
         }
-        else if (op instanceof OpSetPrimCdr) {
-            line = set(op.targetReg, `(cdr %${op.pairReg})`);
+        else if (instr instanceof InstrSetPrimCdr) {
+            line = set(instr.targetReg, `(cdr %${instr.pairReg})`);
         }
-        else if (op instanceof OpSetPrimIdRegSym) {
-            line = set(op.targetReg, `(id %${op.leftReg} ${op.rightSym})`);
+        else if (instr instanceof InstrSetPrimIdRegSym) {
+            line = set(
+                instr.targetReg,
+                `(id %${instr.leftReg} ${instr.rightSym})`,
+            );
         }
-        else if (op instanceof OpSetPrimTypeReg) {
-            line = set(op.targetReg, `(type %${op.objectReg})`);
+        else if (instr instanceof InstrSetPrimTypeReg) {
+            line = set(instr.targetReg, `(type %${instr.objectReg})`);
         }
-        else if (op instanceof OpSetSym) {
-            line = set(op.targetReg, `(sym '${op.sym})`);
+        else if (instr instanceof InstrSetSym) {
+            line = set(instr.targetReg, `(sym '${instr.sym})`);
         }
-        else if (op instanceof OpSetReg) {
-            line = set(op.targetReg, `%${op.sourceReg}`);
+        else if (instr instanceof InstrSetReg) {
+            line = set(instr.targetReg, `%${instr.sourceReg}`);
         }
-        else if (op instanceof OpArgIn) {
+        else if (instr instanceof InstrArgIn) {
             line = "(arg-in)";
         }
-        else if (op instanceof OpArgNext) {
-            line = `(arg-next %${op.register})`;
+        else if (instr instanceof InstrArgNext) {
+            line = `(arg-next %${instr.register})`;
         }
-        else if (op instanceof OpArgMany) {
-            line = `(arg-many %${op.register})`;
+        else if (instr instanceof InstrArgMany) {
+            line = `(arg-many %${instr.register})`;
         }
-        else if (op instanceof OpArgOut) {
+        else if (instr instanceof InstrArgOut) {
             line = "(arg-out)";
         }
-        else if (op instanceof OpSetApply) {
-            line = set(op.targetReg, `(apply %${op.funcReg})`);
+        else if (instr instanceof InstrSetApply) {
+            line = set(instr.targetReg, `(apply %${instr.funcReg})`);
         }
-        else if (op instanceof OpSetGetGlobal) {
-            line = set(op.targetReg, `(get-global "${op.name}")`);
+        else if (instr instanceof InstrSetGetGlobal) {
+            line = set(instr.targetReg, `(get-global "${instr.name}")`);
         }
-        else if (op instanceof OpErrIf) {
-            line = `(err-if %${op.testReg} "${op.errorMessage}")`;
+        else if (instr instanceof InstrErrIf) {
+            line = `(err-if %${instr.testReg} "${instr.errorMessage}")`;
         }
-        else if (op instanceof OpReturnReg) {
-            line = `(return %${op.returnReg})`;
+        else if (instr instanceof InstrReturnReg) {
+            line = `(return %${instr.returnReg})`;
         }
-        else if (op instanceof OpJmp) {
-            line = `(jmp ${op.label})`;
+        else if (instr instanceof InstrJmp) {
+            line = `(jmp ${instr.label})`;
         }
-        else if (op instanceof OpUnlessJmp) {
-            line = `(unless-jmp %${op.testReg} ${op.label})`;
+        else if (instr instanceof InstrUnlessJmp) {
+            line = `(unless-jmp %${instr.testReg} ${instr.label})`;
         }
         else {
-            let _coverageCheck: never = op;
+            let _coverageCheck: never = instr;
             return _coverageCheck;
         }
         let lineLabel = lines.length;
