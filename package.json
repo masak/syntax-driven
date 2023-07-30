@@ -1,0 +1,26 @@
+{
+  "name": "syntax-driven",
+  "version": "0.2.0",
+  "private": true,
+  "dependencies": {
+    "@types/node": "20.4.5",
+    "@typescript-eslint/eslint-plugin": "6.2.0",
+    "@typescript-eslint/parser": "6.2.0",
+    "ava": "5.3.1",
+    "eslint": "8.46.0",
+    "prettier": "3.0.0",
+    "react": "16.4.1",
+    "react-dom": "16.4.1",
+    "react-scripts": "1.1.4",
+    "typescript": "5.1.6"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test-page": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "test": "tsc && ava",
+    "lint": "eslint compiler-src/*.ts test/*.ts",
+    "prettier": "prettier --write compiler-src/*.ts test/*.ts"
+  }
+}
