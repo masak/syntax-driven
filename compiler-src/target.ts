@@ -6,7 +6,6 @@ export interface Header {
 export type Instr =
     InstrSetPrimIdRegSym |
     InstrSetPrimTypeReg |
-    InstrSetSym |
     InstrArgsStart |
     InstrArgOne |
     InstrArgsEnd |
@@ -25,11 +24,6 @@ export class InstrSetPrimIdRegSym {
 
 export class InstrSetPrimTypeReg {
     constructor(public targetReg: number, public objectReg: number) {
-    }
-}
-
-export class InstrSetSym {
-    constructor(public targetReg: number, public sym: string) {
     }
 }
 
@@ -85,9 +79,6 @@ function dump(instructions: Array<Instr>): string {
         }
         else if (instr instanceof InstrSetPrimTypeReg) {
             line = set(instr.targetReg, `(type %${instr.objectReg})`);
-        }
-        else if (instr instanceof InstrSetSym) {
-            line = set(instr.targetReg, `(sym '${instr.sym})`);
         }
         else if (instr instanceof InstrArgsStart) {
             line = "(args-start)";

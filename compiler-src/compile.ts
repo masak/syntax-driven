@@ -14,7 +14,6 @@ import {
     Instr,
     InstrSetPrimIdRegSym,
     InstrSetPrimTypeReg,
-    InstrSetSym,
     InstrArgsStart,
     InstrArgOne,
     InstrArgsEnd,
@@ -65,13 +64,7 @@ export function compile(source: Source, env: Env): Target {
 
     // body
     function handle(ast: Ast): Register {
-        if (ast instanceof AstSymbol && qSym(ast) !== null) {
-            let sym = qSym(ast)!;
-            let symReg = nextReg();
-            instrs.push(new InstrSetSym(symReg, sym));
-            return symReg;
-        }
-        else if (ast instanceof AstSymbol) {
+        if (ast instanceof AstSymbol) {
             let name = ast.name;
             if (registerMap.has(name)) {
                 return registerMap.get(name)!;
