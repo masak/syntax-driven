@@ -133,12 +133,11 @@ F3 -- -- r2     return t   if %r2 == nil</span></code></pre>
       `}
 
       target={`
-        bcfn atom [req %0; reg %0..%4]:
-          %1 ← (get-global "no")
-          %2 ← (type %0)
-          %3 ← (id %2 'pair)
-          %4 ← (id %3 nil)
-          return %4
+        bcfn atom [req %0; reg %0..%3]:
+          %1 ← (type %0)
+          %2 ← (id %1 'pair)
+          %3 ← (id %2 nil)
+          return %3
       `}
     />
 
