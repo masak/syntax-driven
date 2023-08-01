@@ -1,4 +1,5 @@
 import {
+    Instr,
     InstrSetPrimIdRegSym,
     InstrReturnReg,
     Target,
@@ -9,6 +10,40 @@ import {
     Val,
     ValSymbol,
 } from "./val";
+
+type Reaction =
+    ReactionNext |
+    ReactionReturn;
+
+class ReactionNext {
+}
+
+const NEXT = new ReactionNext();
+
+class ReactionReturn {
+    constructor(public val: Val) {
+    }
+}
+
+function step(instr: Instr, registers: Array<Val>): Reaction {
+    if (instr instanceof InstrSetPrimIdRegSym) {
+        let leftValue = registers[instr.leftReg];
+        registers[instr.targetReg] =
+            leftValue instanceof ValSymbol &&
+            leftValue.name === instr.rightSym
+                ? SYMBOL_T
+                : SYMBOL_NIL;
+        return NEXT;
+    }
+    else if (instr instanceof InstrReturnReg) {
+        return new ReactionReturn(registers[instr.returnReg]);
+    }
+    else {
+        throw new Error(
+            `Unknown instruction in 'run': ${instr.constructor.name}`
+        );
+    }
+}
 
 export function run(func: Target, args: Array<Val>): Val {
     let m: RegExpMatchArray;
@@ -26,25 +61,25 @@ export function run(func: Target, args: Array<Val>): Val {
         registers[i] = args[i];
     }
 
-    for (let instr of func.body) {
-        if (instr instanceof InstrSetPrimIdRegSym) {
-            let leftValue = registers[instr.leftReg];
-            registers[instr.targetReg] =
-                leftValue instanceof ValSymbol &&
-                leftValue.name === instr.rightSym
-                    ? SYMBOL_T
-                    : SYMBOL_NIL;
+    let ip = 0;
+    let instrs = func.body;
+    while (true) {
+        let instr = instrs[ip];
+        let reaction = step(instr, registers);
+
+        if (reaction instanceof ReactionNext) {
+            ip++;
+            if (ip >= instrs.length) {
+                throw new Error("Malformed bytecode: fell off the end");
+            }
         }
-        else if (instr instanceof InstrReturnReg) {
-            return registers[instr.returnReg];
+        else if (reaction instanceof ReactionReturn) {
+            return reaction.val;
         }
         else {
-            throw new Error(
-                `Unknown instruction in 'run': ${instr.constructor.name}`
-            );
+            let _coverageCheck: never = reaction;
+            return _coverageCheck;
         }
     }
-
-    throw new Error("Malformed bytecode: fell off the end");
 }
 
