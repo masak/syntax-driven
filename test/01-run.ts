@@ -14,18 +14,12 @@ test("running 'no'", (t) => {
     let bcfnNo = targets.get("no")!;
     t.not(bcfnNo, undefined);
 
-    let returnValue = run(bcfnNo, [SYMBOL_NIL]);
-    t.deepEqual(returnValue, SYMBOL_T);
+    let r1 = run(bcfnNo, [SYMBOL_NIL]);
+    t.deepEqual(r1, SYMBOL_T);
+
+    let r2 = run(bcfnNo, [SYMBOL_T]);
+    t.deepEqual(r2, SYMBOL_NIL);
 });
-
-// > (bcfn!no 'nil)
-// t
-
-// > (bcfn!no '())
-// t
-
-// > (bcfn!no t)
-// nil
 
 // > (bcfn!no 'x)
 // nil
