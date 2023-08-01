@@ -6,6 +6,7 @@ import {
 import {
     char,
     list,
+    pair,
     symbol,
     SYMBOL_NIL,
     SYMBOL_T,
@@ -31,10 +32,10 @@ test("running 'no'", (t) => {
 
     let r5 = run(bcfnNo, [list(SYMBOL_NIL)]);
     t.deepEqual(r5, SYMBOL_NIL);
-});
 
-// > (bcfn!no '(a . b))
-// nil
+    let r6 = run(bcfnNo, [pair(symbol("a"), symbol("b"))]);
+    t.deepEqual(r6, SYMBOL_NIL);
+});
 
 // > (bcfn!no no)
 // nil
@@ -44,3 +45,4 @@ test("running 'no'", (t) => {
 
 // > (bcfn!no (bcfn!no bcfn!no))
 // t
+

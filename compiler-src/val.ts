@@ -17,11 +17,14 @@ export class ValPair {
     }
 }
 
+export function pair(a: Val, d: Val) {
+    return new ValPair(a, d);
+}
+
 export function list(...elems: Array<Val>): ValPair | ValSymbol {
     let result: ValPair | ValSymbol = SYMBOL_NIL;
     for (let i = elems.length - 1; i >= 0; i--) {
-        let elem = elems[i];
-        result = new ValPair(elem, result);
+        result = pair(elems[i], result);
     }
     return result;
 }
