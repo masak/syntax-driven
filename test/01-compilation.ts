@@ -8,7 +8,7 @@ import {
 } from "../compiler-src/target";
 
 import sources from "../test-data/sources";
-import expectedTargets from "../test-data/expected-targets";
+import targets from "../test-data/targets";
 import {
     emptyEnv,
     envAfterNo,
@@ -18,7 +18,7 @@ test("compiling 'no'", (t) => {
     let source = sources.get("no")!;
     t.not(source, undefined);
 
-    let target = expectedTargets.get("no")!;
+    let target = targets.get("no")!;
     t.not(target, undefined);
 
     let expectedTarget = stringifyTarget(target);
@@ -31,7 +31,7 @@ test("compiling 'atom'", (t) => {
     let source = sources.get("atom")!;
     t.not(source, undefined);
 
-    let target = expectedTargets.get("atom")!;
+    let target = targets.get("atom")!;
     t.not(target, undefined);
 
     let expectedTarget = stringifyTarget(target);
