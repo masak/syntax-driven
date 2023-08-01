@@ -4,6 +4,7 @@ import {
     run,
 } from "../compiler-src/run";
 import {
+    char,
     symbol,
     SYMBOL_NIL,
     SYMBOL_T,
@@ -23,10 +24,10 @@ test("running 'no'", (t) => {
 
     let r3 = run(bcfnNo, [symbol("x")]);
     t.deepEqual(r3, SYMBOL_NIL);
-});
 
-// > (bcfn!no \c)
-// nil
+    let r4 = run(bcfnNo, [char("c")]);
+    t.deepEqual(r4, SYMBOL_NIL);
+});
 
 // > (bcfn!no '(nil))
 // nil
