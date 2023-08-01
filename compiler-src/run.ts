@@ -3,27 +3,12 @@ import {
     InstrReturnReg,
     Target,
 } from "./target";
-
-type Val =
-    ValSymbol;
-
-class ValSymbol {
-    constructor(public name: string) {
-    }
-}
-
-export const SYMBOL_NIL = new ValSymbol("nil");
-export const SYMBOL_T = new ValSymbol("t");
-
-export function showVal(val: Val): string {
-    if (val instanceof ValSymbol) {
-        return val.name;
-    }
-    else {
-        let _coverageCheck: never = val;
-        return _coverageCheck;
-    }
-}
+import {
+    SYMBOL_NIL,
+    SYMBOL_T,
+    Val,
+    ValSymbol,
+} from "./val";
 
 export function run(func: Target, args: Array<Val>): Val {
     let m: RegExpMatchArray;

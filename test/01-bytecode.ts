@@ -2,9 +2,11 @@ import test from "ava";
 
 import {
     run,
+} from "../compiler-src/run";
+import {
     SYMBOL_NIL,
     SYMBOL_T,
-} from "../compiler-src/run";
+} from "../compiler-src/val";
 
 import targets from "../test-data/targets";
 
