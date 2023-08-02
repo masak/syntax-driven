@@ -14,15 +14,6 @@ import {
 const EMPTY_LINE = /^\s*$/;
 const HEADER = /^bcfn\s+(\w+)\s*\[req:\s*%(\d+);\s*reg:\s*%0..%(\d+)\]$/;
 
-const SET_PRIM_ID_REG_SYM = /^%(\d+)\s*←\s*\(id\s+%(\d+)\s+'?(\w+)\)$/;
-const SET_PRIM_TYPE_REG = /^%(\d+)\s*←\s*\(type\s+%(\d+)\)$/;
-const ARGS_START = /^\(args-start\)$/;
-const ARG_ONE = /^\(arg-one\s*%(\d+)\)$/;
-const ARGS_END = /^\(args-end\)$/;
-const SET_APPLY = /^%(\d+)\s*←\s*\(apply\s+%(\d+)\)$/;
-const SET_GET_GLOBAL = /^%(\d+)\s*←\s*\(get-global\s+"([^"]*)"\)$/;
-const RETURN_REG = /^return\s*%(\d+)$/;
-
 export function parse(input: string): Target {
     let instrs: Array<Instr> = [];
 
@@ -38,51 +29,43 @@ export function parse(input: string): Target {
         line = line.trim();
 
         let m: RegExpExecArray;
+        let instr: Instr;
+
         if (m = HEADER.exec(line)!) {
             name = m[1];
             maxReqReg = Number(m[2]);
             maxReg = Number(m[3]);
+            continue;
         }
-        else if (m = SET_PRIM_ID_REG_SYM.exec(line)!) {
-            let targetReg = Number(m[1]);
-            let leftReg = Number(m[2]);
-            let rightSym = m[3];
-            instrs.push(
-                new InstrSetPrimIdRegSym(targetReg, leftReg, rightSym)
-            );
+        else if (InstrSetPrimIdRegSym.matches(line)) {
+            instr = InstrSetPrimIdRegSym.parse(line);
         }
-        else if (m = SET_PRIM_TYPE_REG.exec(line)!) {
-            let targetReg = Number(m[1]);
-            let objectReg = Number(m[2]);
-            instrs.push(new InstrSetPrimTypeReg(targetReg, objectReg));
+        else if (InstrSetPrimTypeReg.matches(line)) {
+            instr = InstrSetPrimTypeReg.parse(line);
         }
-        else if (m = ARGS_START.exec(line)!) {
-            instrs.push(new InstrArgsStart());
+        else if (InstrArgsStart.matches(line)) {
+            instr = InstrArgsStart.parse(line);
         }
-        else if (m = ARG_ONE.exec(line)!) {
-            let register = Number(m[1]);
-            instrs.push(new InstrArgOne(register));
+        else if (InstrArgOne.matches(line)) {
+            instr = InstrArgOne.parse(line);
         }
-        else if (m = ARGS_END.exec(line)!) {
-            instrs.push(new InstrArgsEnd());
+        else if (InstrArgsEnd.matches(line)) {
+            instr = InstrArgsEnd.parse(line);
         }
-        else if (m = SET_APPLY.exec(line)!) {
-            let targetReg = Number(m[1]);
-            let funcReg = Number(m[2]);
-            instrs.push(new InstrSetApply(targetReg, funcReg));
+        else if (InstrSetApply.matches(line)) {
+            instr = InstrSetApply.parse(line);
         }
-        else if (m = RETURN_REG.exec(line)!) {
-            let returnReg = Number(m[1]);
-            instrs.push(new InstrReturnReg(returnReg));
+        else if (InstrReturnReg.matches(line)) {
+            instr = InstrReturnReg.parse(line);
         }
-        else if (m = SET_GET_GLOBAL.exec(line)!) {
-            let targetReg = Number(m[1]);
-            let name = m[2];
-            instrs.push(new InstrSetGetGlobal(targetReg, name));
+        else if (InstrSetGetGlobal.matches(line)) {
+            instr = InstrSetGetGlobal.parse(line);
         }
         else {
             throw new Error(`Unrecognized line: '${line}'`);
         }
+
+        instrs.push(instr);
     }
 
     if (name === "<unset>") {
