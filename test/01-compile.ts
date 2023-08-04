@@ -12,7 +12,7 @@ import targets from "../test-data/targets";
 import {
     emptyEnv,
     envAfterNo,
-} from "../test-data/environments";
+} from "../test-data/envs";
 
 test("compiling 'no'", (t) => {
     let source = sources.get("no")!;
