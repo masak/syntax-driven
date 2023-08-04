@@ -15,6 +15,7 @@ import {
 import targets from "../test-data/targets";
 import {
     envAfterNo,
+    envAfterAtom,
 } from "../test-data/envs";
 
 test("running 'no'", (t) => {
@@ -43,5 +44,24 @@ test("running 'no'", (t) => {
 
     let r7 = rt.run(bcfnNo, [rt.fn("no")]);
     t.deepEqual(r7, SYMBOL_NIL);
+});
+
+test("running 'atom'", (t) => {
+    let rt = new Runtime(envAfterAtom);
+
+    let bcfnAtom = targets.get("atom")!;
+    t.not(bcfnAtom, undefined);
+
+    let r1 = rt.run(bcfnAtom, [char("a")]);
+    t.deepEqual(r1, SYMBOL_T);
+
+    let r2 = rt.run(bcfnAtom, [SYMBOL_T]);
+    t.deepEqual(r2, SYMBOL_T);
+
+    let r3 = rt.run(bcfnAtom, [symbol("a")]);
+    t.deepEqual(r3, SYMBOL_T);
+
+    let r4 = rt.run(bcfnAtom, [list(symbol("a"))]);
+    t.deepEqual(r4, SYMBOL_NIL);
 });
 

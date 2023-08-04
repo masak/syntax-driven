@@ -9,3 +9,6 @@ export const emptyEnv = new Env();
 export const envAfterNo = emptyEnv
     .install(sources.get("no")!);
 
+export const envAfterAtom = envAfterNo
+    .install(sources.get("atom")!);
+
