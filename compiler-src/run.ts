@@ -8,6 +8,7 @@ import {
     SYMBOL_NIL,
     SYMBOL_T,
     Val,
+    ValFn,
     ValSymbol,
 } from "./val";
 import {
@@ -90,6 +91,11 @@ export class Runtime {
                 return _coverageCheck;
             }
         }
+    }
+
+    fn(name: string) {
+        let target = this.env.get(name);
+        return new ValFn(target);
     }
 }
 

@@ -1,5 +1,10 @@
+import {
+    Target,
+} from "./target";
+
 export type Val =
     ValChar |
+    ValFn |
     ValPair |
     ValSymbol;
 
@@ -41,6 +46,11 @@ export function symbol(name: string) {
     return new ValSymbol(name);
 }
 
+export class ValFn {
+    constructor(public fn: Target) {
+    }
+}
+
 export function showVal(val: Val): string {
     if (val instanceof ValSymbol) {
         return val.name;
@@ -51,6 +61,9 @@ export function showVal(val: Val): string {
     else if (val instanceof ValPair) {
         // TODO: Also support the sugared form
         return `(${val.a} . ${val.d})`;
+    }
+    else if (val instanceof ValFn) {
+        return `<fn: ${val.fn.name}>`;
     }
     else {
         let _coverageCheck: never = val;

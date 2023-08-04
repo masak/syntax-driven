@@ -19,8 +19,16 @@ export class Env {
         return new Env(newBindings);
     }
 
-    has(bindingName: string): boolean {
-        return this.bindings.has(bindingName);
+    has(name: string): boolean {
+        return this.bindings.has(name);
+    }
+
+    get(name: string): Target {
+        let target = this.bindings.get(name);
+        if (target === undefined) {
+            throw new Error(`Cannot find target '${name}' in environment`);
+        }
+        return target;
     }
 }
 

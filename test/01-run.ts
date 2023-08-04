@@ -40,14 +40,8 @@ test("running 'no'", (t) => {
 
     let r6 = rt.run(bcfnNo, [pair(symbol("a"), symbol("b"))]);
     t.deepEqual(r6, SYMBOL_NIL);
+
+    let r7 = rt.run(bcfnNo, [rt.fn("no")]);
+    t.deepEqual(r7, SYMBOL_NIL);
 });
-
-// > (bcfn!no no)
-// nil
-
-// > (bcfn!no bcfn!no)
-// nil
-
-// > (bcfn!no (bcfn!no bcfn!no))
-// t
 
