@@ -144,7 +144,7 @@ F3 -- -- r2     return t   if %r2 == nil</span></code></pre>
     <p>
         much better. but how does that work? how can we get only
         the juicy contents of the { " " } <code>no</code>
-        function, delivered straight into the { " " }
+        { " " } function, delivered straight into the { " " }
         <code>atom</code> function?
     </p>
 
