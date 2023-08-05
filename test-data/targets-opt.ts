@@ -13,15 +13,11 @@ let expectedTargets = new Map<string, Target>([
     `)],
 
     ["atom", parse(`
-        bcfn atom [req: %0; reg: %0..%4]
-            %1 ← (get-global "no")
-            %2 ← (type %0)
-            %3 ← (id %2 'pair)
-            (args-start)
-              (arg-one %3)
-            (args-end)
-            %4 ← (apply %1)
-            return %4
+        bcfn atom [req: %0; reg: %0..%3]
+            %1 ← (type %0)
+            %2 ← (id %1 'pair)
+            %3 ← (id %2 nil)
+            return %3
     `)],
 ]);
 

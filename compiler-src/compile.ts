@@ -20,12 +20,16 @@ import {
     InstrSetApply,
     InstrSetGetGlobal,
     InstrReturnReg,
+    Register,
     Target,
 } from "./target";
 import {
     Conf,
     OPT_ALL,
 } from "./conf";
+import {
+    inline,
+} from "./inline";
 
 const selfQuotingSymbols = new Set(["nil", "t"]);
 
@@ -39,15 +43,13 @@ function qSym(ast: Ast): string | null {
     return null;
 }
 
-type Register = number;
-
 export function compile(
     source: Source,
     env: Env,
     conf: Conf = OPT_ALL,
 ): Target {
     let unusedReg = 0;
-    function nextReg(): number {
+    function nextReg(): Register {
         return unusedReg++;
     }
 
@@ -136,16 +138,25 @@ export function compile(
                 return targetReg;
             }
             else if (env.has(opName)) {
-                let funcReg = nextReg();
-                instrs.push(new InstrSetGetGlobal(funcReg, opName));
                 let argRegs = args.map(handle);
-                instrs.push(new InstrArgsStart());
-                for (let reg of argRegs) {
-                    instrs.push(new InstrArgOne(reg));
+                let targetReg: Register;
+                if (conf.inlineKnownCalls) {
+                    targetReg = inline(
+                        env.get(opName), argRegs, instrs, unusedReg
+                    );
+                    unusedReg = targetReg + 1;
                 }
-                instrs.push(new InstrArgsEnd());
-                let targetReg = nextReg();
-                instrs.push(new InstrSetApply(targetReg, funcReg));
+                else {
+                    let funcReg = nextReg();
+                    instrs.push(new InstrSetGetGlobal(funcReg, opName));
+                    instrs.push(new InstrArgsStart());
+                    for (let reg of argRegs) {
+                        instrs.push(new InstrArgOne(reg));
+                    }
+                    instrs.push(new InstrArgsEnd());
+                    targetReg = nextReg();
+                    instrs.push(new InstrSetApply(targetReg, funcReg));
+                }
                 return targetReg;
             }
             else {

@@ -12,7 +12,8 @@ import {
 } from "../compiler-src/conf";
 
 import sources from "../test-data/sources";
-import targets from "../test-data/targets";
+import targetsUnopt from "../test-data/targets-unopt";
+import targetsOpt from "../test-data/targets-opt";
 import {
     emptyEnv,
     envAfterNo,
@@ -22,7 +23,7 @@ test("compiling 'no'", (t) => {
     let source = sources.get("no")!;
     t.not(source, undefined);
 
-    let target = targets.get("no")!;
+    let target = targetsUnopt.get("no")!;
     t.not(target, undefined);
 
     let expectedTarget = stringifyTarget(target);
@@ -35,7 +36,7 @@ test("compiling 'atom' (unopt)", (t) => {
     let source = sources.get("atom")!;
     t.not(source, undefined);
 
-    let expectedTarget = targets.get("atom")!;
+    let expectedTarget = targetsUnopt.get("atom")!;
     t.not(expectedTarget, undefined);
 
     let actualTarget = compile(source, envAfterNo, OPT_NONE);
@@ -50,7 +51,7 @@ test("compiling 'atom' (opt)", (t) => {
     let source = sources.get("atom")!;
     t.not(source, undefined);
 
-    let expectedTarget = targets.get("atom")!;
+    let expectedTarget = targetsOpt.get("atom")!;
     t.not(expectedTarget, undefined);
 
     let actualTarget = compile(source, envAfterNo, OPT_ALL);

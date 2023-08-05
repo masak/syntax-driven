@@ -12,7 +12,7 @@ import {
     SYMBOL_T,
 } from "../compiler-src/val";
 
-import targets from "../test-data/targets";
+import targetsOpt from "../test-data/targets-opt";
 import {
     envAfterNo,
     envAfterAtom,
@@ -21,7 +21,7 @@ import {
 test("running 'no'", (t) => {
     let rt = new Runtime(envAfterNo);
 
-    let bcfnNo = targets.get("no")!;
+    let bcfnNo = targetsOpt.get("no")!;
     t.not(bcfnNo, undefined);
 
     let r1 = rt.run(bcfnNo, [SYMBOL_NIL]);
@@ -49,7 +49,7 @@ test("running 'no'", (t) => {
 test("running 'atom'", (t) => {
     let rt = new Runtime(envAfterAtom);
 
-    let bcfnAtom = targets.get("atom")!;
+    let bcfnAtom = targetsOpt.get("atom")!;
     t.not(bcfnAtom, undefined);
 
     let r1 = rt.run(bcfnAtom, [char("a")]);

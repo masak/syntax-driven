@@ -3,6 +3,8 @@ export interface Header {
     reg: string;
 }
 
+export type Register = number;
+
 export type Instr =
     InstrSetPrimIdRegSym |
     InstrSetPrimTypeReg |
@@ -20,8 +22,8 @@ export class BaseInstr {
 
 export class InstrSetPrimIdRegSym extends BaseInstr {
     constructor(
-        public targetReg: number,
-        public leftReg: number,
+        public targetReg: Register,
+        public leftReg: Register,
         public rightSym: string,
     ) {
         super();
@@ -29,7 +31,7 @@ export class InstrSetPrimIdRegSym extends BaseInstr {
 }
 
 export class InstrSetPrimTypeReg extends BaseInstr {
-    constructor(public targetReg: number, public objectReg: number) {
+    constructor(public targetReg: Register, public objectReg: Register) {
         super();
     }
 }
@@ -53,19 +55,19 @@ export class InstrArgsEnd extends BaseInstr {
 }
 
 export class InstrSetApply extends BaseInstr {
-    constructor(public targetReg: number, public funcReg: number) {
+    constructor(public targetReg: Register, public funcReg: Register) {
         super();
     }
 }
 
 export class InstrSetGetGlobal extends BaseInstr {
-    constructor(public targetReg: number, public name: string) {
+    constructor(public targetReg: Register, public name: string) {
         super();
     }
 }
 
 export class InstrReturnReg extends BaseInstr {
-    constructor(public returnReg: number) {
+    constructor(public returnReg: Register) {
         super();
     }
 }
@@ -80,7 +82,7 @@ export class Target {
 }
 
 function dump(instructions: Array<Instr>): string {
-    function set(targetReg: number, rest: string): string {
+    function set(targetReg: Register, rest: string): string {
         let leftArrow = String.fromCodePoint(8592);
         return `%${targetReg} ${leftArrow} ${rest}`;
     }
