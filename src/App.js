@@ -28,7 +28,7 @@ const App = (props) => (
       `}
 
       target={`
-        bcfn no [req %0; reg %0..%1]:
+        bcfn no [req %0; reg %0..%1]
           %1 ← (id %0 nil)
           return %1
       `}
@@ -46,33 +46,16 @@ const App = (props) => (
     </p>
 
     <p>
-        here is the instruction set. i've greyed out the parts
-        we're not using yet.
+        here is the instruction set.
     </p>
 
-    <pre><code><span class="less-important">22 tr r1 --     %tr ← (car %r1)       { "\n" }
-23 tr r1 --     %tr ← (cdr %r1)       { "\n" }</span>
-24 tr r1 sy     %tr ← (id %r1 symbol) { "\n" }
-<span class="less-important">25 tr -- --     %tr ← (join nil nil)  { "\n" }
-26 tr r1 --     %tr ← (join %r1 nil)  { "\n" }
-27 tr r1 r2     %tr ← (join %r1 %r2)  { "\n" }
+    <pre><code>24 tr r1 sy     %tr ← (id %r1 symbol) { "\n" }
 28 tr r1 --     %tr ← (type %r1)      { "\n" }
-30 tr r1 --     %tr ← %r1             { "\n" }
-31 tr s1 --     %tr ← symbol          { "\n" }
-40 lb -- --     jmp label                  { "\n" }
-41 lb r1 --     jmp label if %r1 != nil    { "\n" }
-42 lb r1 --     jmp label if %r1 == nil    { "\n" }
 50 -- -- --     (start of arguments)       { "\n" }
 51 -- r1 --       add a single argument    { "\n" }
-52 -- r1 --       add list of arguments    { "\n" }
 53 -- -- --     (end of arguments)         { "\n" }
-60 -- r1 --     (apply %r1 &lt;args&gt;)   { "\n" }
 61 tr r1 --     %tr ← (apply %r1 &lt;args&gt;) { "\n" }
-E0 -- r1 sy     err symbol if %r1 != nil   { "\n" }</span>
-F0 -- r1 --     return %r1                 { "\n" }
-<span class="less-important">F1 -- r1 r2     return %r1 if %r2 != nil  { "\n" }
-F2 -- -- r2     return nil if %r2 == nil   { "\n" }
-F3 -- -- r2     return t   if %r2 == nil</span></code></pre>
+F0 -- r1 --     return %r1</code></pre>
 
     <p>
         we don't actually need the function to use 2 registers;
@@ -96,15 +79,15 @@ F3 -- -- r2     return t   if %r2 == nil</span></code></pre>
       `}
 
       target={`
-        bcfn atom [req %0; reg %0..%4]:
-          %1 ← (get-global "no")
-          %2 ← (type %0)
-          %3 ← (id %2 'pair)
-          (arg-start)
-            (arg-one %3)
-          (arg-end)
-          %4 ← (apply %1)
-          return %4
+        bcfn atom [req: %0; reg: %0..%4]
+            %1 ← (type %0)
+            %2 ← (id %1 'pair)
+            %3 ← (get-global "no")
+            (args-start)
+              (arg-one %2)
+            (args-end)
+            %4 ← (apply %3)
+            return %4
       `}
     />
 
