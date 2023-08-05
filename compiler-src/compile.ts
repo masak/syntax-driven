@@ -22,6 +22,10 @@ import {
     InstrReturnReg,
     Target,
 } from "./target";
+import {
+    Conf,
+    OPT_ALL,
+} from "./conf";
 
 const selfQuotingSymbols = new Set(["nil", "t"]);
 
@@ -37,7 +41,11 @@ function qSym(ast: Ast): string | null {
 
 type Register = number;
 
-export function compile(source: Source, env: Env): Target {
+export function compile(
+    source: Source,
+    env: Env,
+    conf: Conf = OPT_ALL,
+): Target {
     let unusedReg = 0;
     function nextReg(): number {
         return unusedReg++;

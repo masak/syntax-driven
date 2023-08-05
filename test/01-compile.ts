@@ -6,6 +6,10 @@ import {
 import {
     stringifyTarget,
 } from "../compiler-src/target";
+import {
+    OPT_ALL,
+    OPT_NONE,
+} from "../compiler-src/conf";
 
 import sources from "../test-data/sources";
 import targets from "../test-data/targets";
@@ -27,17 +31,33 @@ test("compiling 'no'", (t) => {
     t.deepEqual(actualTarget, expectedTarget);
 });
 
-test("compiling 'atom'", (t) => {
+test("compiling 'atom' (unopt)", (t) => {
     let source = sources.get("atom")!;
     t.not(source, undefined);
 
-    let target = targets.get("atom")!;
-    t.not(target, undefined);
+    let expectedTarget = targets.get("atom")!;
+    t.not(expectedTarget, undefined);
 
-    let expectedTarget = stringifyTarget(target);
+    let actualTarget = compile(source, envAfterNo, OPT_NONE);
 
-    let actualTarget = stringifyTarget(compile(source, envAfterNo));
+    t.deepEqual(
+        stringifyTarget(actualTarget),
+        stringifyTarget(expectedTarget),
+    );
+});
 
-    t.deepEqual(actualTarget, expectedTarget);
+test("compiling 'atom' (opt)", (t) => {
+    let source = sources.get("atom")!;
+    t.not(source, undefined);
+
+    let expectedTarget = targets.get("atom")!;
+    t.not(expectedTarget, undefined);
+
+    let actualTarget = compile(source, envAfterNo, OPT_ALL);
+
+    t.deepEqual(
+        stringifyTarget(actualTarget),
+        stringifyTarget(expectedTarget),
+    );
 });
 
