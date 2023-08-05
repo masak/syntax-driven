@@ -173,6 +173,16 @@ F3 -- -- r2     return t   if %r2 == nil</span></code></pre>
         execution. that's the whole reason i'm compiling instead
         of interpreting.
     </p>
+
+    <p>
+        it's time to snapshot v01 of the compiler, as well as of
+        the bytecode container:
+    </p>
+
+    <p>
+        <em>&lt;some statistics here, as well as the full source
+        code&gt;</em>
+    </p>
   </main>
 );
 
