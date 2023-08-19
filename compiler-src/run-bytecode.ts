@@ -168,5 +168,10 @@ export class BcRuntime {
             }
         }
     }
+
+    fn(name: string): ValByteFn {
+        let addr = this.bytecode.findGlobal(name);
+        return new ValByteFn(addr);
+    }
 }
 

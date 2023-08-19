@@ -40,8 +40,8 @@ test("running 'no'", (t) => {
 
     let r6 = rt.run("no", [pair(symbol("a"), symbol("b"))]);
     t.deepEqual(r6, SYMBOL_NIL);
-//
-//    let r7 = rt.run("no", [rt.fn("no")]);
-//    t.deepEqual(r7, SYMBOL_NIL);
+
+    let r7 = rt.run("no", [rt.fn("no")]);
+    t.deepEqual(r7, SYMBOL_NIL);
 });
 
