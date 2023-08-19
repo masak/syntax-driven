@@ -224,7 +224,7 @@ export const valTs = `
             return val.name;
         }
         else if (val instanceof ValChar) {
-            return "\\" + val.value;
+            return "\\\\" + val.value;
         }
         else if (val instanceof ValPair) {
             // TODO: Also support the sugared form
@@ -395,8 +395,8 @@ export const parseTargetTs = `
         Target,
     } from "./target";
 
-    const EMPTY_LINE = /^\s*$/;
-    const HEADER = /^bcfn\s+(\w+)\s*\[req:\s*%(\d+);\s*reg:\s*%0..%(\d+)\]$/;
+    const EMPTY_LINE = /^\\s*$/;
+    const HEADER = /^bcfn\\s+(\\w+)\\s*\\[req:\\s*%(\\d+);\\s*reg:\\s*%0..%(\\d+)\\]$/;
 
     let parsers: Map<typeof BaseInstr, string> = new Map([
         [InstrSetPrimIdRegSym, ",reg ← (id ,reg ,sym)"],
@@ -409,8 +409,8 @@ export const parseTargetTs = `
         [InstrReturnReg, "return ,reg"],
     ] as Array<[typeof BaseInstr, string]>);
 
-    const REG = /^%(\d+)/;
-    const SYM = /^'?(\w+)/;
+    const REG = /^%(\\d+)/;
+    const SYM = /^'?(\\w+)/;
     const STR = /^"([^"]*)"/;
 
     function parseInstr(input: string): Instr | null {
@@ -563,8 +563,8 @@ export const parseSourceTs = `
         }
     }
 
-    const WHITESPACE = /^[\s\n]*/;
-    const SYMBOL = /^\w+/;
+    const WHITESPACE = /^[\\s\\n]*/;
+    const SYMBOL = /^\\w+/;
 
     function isSymbolOfName(ast: Ast, name: string): boolean {
         return ast instanceof AstSymbol && ast.name === name;
