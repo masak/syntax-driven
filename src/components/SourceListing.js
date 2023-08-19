@@ -19,9 +19,9 @@ function deindent(s) {
     ).join("\n");
 }
 
-const Translation = (props) => {
+const SourceListing = (props) => {
     let sourceText = stripSurroundingEmpty(props.sourceText);
-    sourceText = deindent(source);
+    sourceText = deindent(sourceText);
     
     return (
       <div class="source-listing">
@@ -30,5 +30,5 @@ const Translation = (props) => {
     );
 };
 
-export default Translation;
+export default SourceListing;
 
