@@ -1,6 +1,8 @@
 import React from 'react';
 import './App.css';
 import Translation from './components/Translation';
+import SourceListing from './components/SourceListing';
+import * as v01 from './snapshots/v01';
 
 const App = (props) => (
   <main>
@@ -166,6 +168,18 @@ F0 -- r1 --     return %r1</code></pre>
         <em>&lt;some statistics here, as well as the full source
         code&gt;</em>
     </p>
+
+    <SourceListing sourceText={v01.confTs} />
+    <SourceListing sourceText={v01.sourceTs} />
+    <SourceListing sourceText={v01.envTs} />
+    <SourceListing sourceText={v01.inlineTs} />
+    <SourceListing sourceText={v01.valTs} />
+    <SourceListing sourceText={v01.targetTs} />
+    <SourceListing sourceText={v01.parseTargetTs} />
+    <SourceListing sourceText={v01.parseSourceTs} />
+    <SourceListing sourceText={v01.runBytecodeTs} />
+    <SourceListing sourceText={v01.compileTs} />
+    <SourceListing sourceText={v01.bytecodeTs} />
   </main>
 );
 
