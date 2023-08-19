@@ -30,7 +30,7 @@ const SourceListing = (props) => {
     
     return (
       <div class="source-listing">
-        <p>{fileName}:</p>
+        <p>{props.fileName}:</p>
         <pre class="source-listing"><code>{sourceText}</code></pre>
       </div>
     );
