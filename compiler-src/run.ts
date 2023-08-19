@@ -15,6 +15,7 @@ import {
     SYMBOL_NIL,
     SYMBOL_T,
     Val,
+    ValByteFn,
     ValChar,
     ValFn,
     ValPair,
@@ -70,10 +71,9 @@ export class Runtime {
             if (value instanceof ValChar) {
                 result = symbol("char");
             }
-            else if (value instanceof ValFn) {
-                result = symbol("pair");
-            }
-            else if (value instanceof ValPair) {
+            else if (value instanceof ValFn ||
+                        value instanceof ValByteFn ||
+                        value instanceof ValPair) {
                 result = symbol("pair");
             }
             else if (value instanceof ValSymbol) {
@@ -119,20 +119,9 @@ export class Runtime {
     }
 
     run(func: Target, funcArgs: Array<Val>): Val {
-        let m: RegExpMatchArray;
-        let maxReqReg = (m = /^%(\d+)$/.exec(func.header.req)!)
-            ? Number(m[1])
-            : (function () {
-                throw new Error(`Couldn't parse req: '${func.header.req}'`)
-               })();
-        let maxReg = (m = /^%\d+..%(\d+)$/.exec(func.header.reg)!)
-            ? Number(m[1])
-            : (function () {
-                throw new Error(`Couldn't parse reg: '${func.header.reg}'`)
-              })();
-
-        let registers: Array<Val> = new Array(maxReg + 1).fill(SYMBOL_NIL);
-        for (let i = 0; i <= maxReqReg; i++) {
+        let registers: Array<Val> =
+            new Array(func.header.regCount).fill(SYMBOL_NIL);
+        for (let i = 0; i < func.header.reqCount; i++) {
             registers[i] = funcArgs[i];
         }
 

@@ -5,6 +5,7 @@ import {
 export type Val =
     ValChar |
     ValFn |
+    ValByteFn |
     ValPair |
     ValSymbol;
 
@@ -51,6 +52,11 @@ export class ValFn {
     }
 }
 
+export class ValByteFn {
+    constructor(public addr: number) {
+    }
+}
+
 export function showVal(val: Val): string {
     if (val instanceof ValSymbol) {
         return val.name;
@@ -64,6 +70,9 @@ export function showVal(val: Val): string {
     }
     else if (val instanceof ValFn) {
         return `<fn: ${val.fn.name}>`;
+    }
+    else if (val instanceof ValByteFn) {
+        return `<bytefn>`;
     }
     else {
         let _coverageCheck: never = val;

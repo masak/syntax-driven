@@ -96,7 +96,6 @@ function toFunc(ev: Ev): AstFunc {
             return ev.ast as AstFunc;
         }
         else {
-            console.log(ev.ast);
             throw new Error(`Not a function: ${ev.ast.constructor.name}`);
         }
     }

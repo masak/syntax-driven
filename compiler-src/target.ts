@@ -1,6 +1,6 @@
 export interface Header {
-    req: string;
-    reg: string;
+    reqCount: number;
+    regCount: number;
 }
 
 export type Register = number;
@@ -128,7 +128,8 @@ function dump(instructions: Array<Instr>): string {
 }
 
 export function stringifyTarget({ name, header, body }: Target): string {
-    let headerDesc = `[req: ${header.req}; reg: ${header.reg}]`;
+    let { reqCount, regCount } = header;
+    let headerDesc = `[reqCount: ${reqCount}; regCount: ${regCount}]`;
     return `bcfn ${name} ${headerDesc}` + "\n" + dump(body);
 }
 

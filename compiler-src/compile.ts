@@ -174,17 +174,12 @@ export function compile(
     }
     instrs.push(new InstrReturnReg(returnReg));
 
-    let req = maxReqReg === 0
-        ? "%0"
-        : `%0..%${maxReqReg}`;
-
-    let reg = returnReg === 0
-        ? "%0"
-        : `%0..%${returnReg}`;
+    let reqCount = maxReqReg + 1;
+    let regCount = returnReg + 1;
 
     return new Target(
         source.name,
-        { req, reg },
+        { reqCount, regCount },
         instrs,
     );
 }

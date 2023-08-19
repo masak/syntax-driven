@@ -18,15 +18,8 @@ export function inline(
     instrs: Array<Instr>,
     unusedReg: Register,
 ) {
-    let m: RegExpMatchArray;
-    let maxReqReg = (m = /^%(\d+)$/.exec(callee.header.req)!)
-        ? Number(m[1])
-        : (function () {
-            throw new Error(`Couldn't parse req: '${callee.header.req}'`)
-           })();
-
     let registerMap: Map<Register, Register> = new Map();
-    for (let i = 0; i <= maxReqReg; i++) {
+    for (let i = 0; i < callee.header.reqCount; i++) {
         registerMap.set(i, argRegs[i]);
     }
 

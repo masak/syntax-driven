@@ -30,5 +30,9 @@ export class Env {
         }
         return target;
     }
+
+    names(): Array<string> {
+        return [...this.bindings.keys()];
+    }
 }
 

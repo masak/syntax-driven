@@ -127,14 +127,9 @@ export function parse(input: string): Target {
         throw new Error("Parse error: no header line");
     }
 
-    let req = maxReqReg === 0
-        ? "%0"
-        : `%0..%${maxReqReg}`;
+    let reqCount = maxReqReg + 1;
+    let regCount = maxReg + 1;
 
-    let reg = maxReg === 0
-        ? "%0"
-        : `%0..%${maxReg}`;
-
-    return new Target(name, { req, reg }, instrs);
+    return new Target(name, { reqCount, regCount }, instrs);
 }
 
