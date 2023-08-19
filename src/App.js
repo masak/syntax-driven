@@ -168,17 +168,17 @@ F0 -- r1 --     return %r1</code></pre>
         <em>&lt;some statistics here&gt;</em>
     </p>
 
-    <SourceListing sourceText={v01.confTs} />
-    <SourceListing sourceText={v01.sourceTs} />
-    <SourceListing sourceText={v01.envTs} />
-    <SourceListing sourceText={v01.inlineTs} />
-    <SourceListing sourceText={v01.valTs} />
-    <SourceListing sourceText={v01.targetTs} />
-    <SourceListing sourceText={v01.parseTargetTs} />
-    <SourceListing sourceText={v01.parseSourceTs} />
-    <SourceListing sourceText={v01.runBytecodeTs} />
-    <SourceListing sourceText={v01.compileTs} />
-    <SourceListing sourceText={v01.bytecodeTs} />
+    <SourceListing fileName="conf.ts" sourceText={v01.confTs} />
+    <SourceListing fileName="source.ts" sourceText={v01.sourceTs} />
+    <SourceListing fileName="env.ts" sourceText={v01.envTs} />
+    <SourceListing fileName="inline.ts" sourceText={v01.inlineTs} />
+    <SourceListing fileName="val.ts" sourceText={v01.valTs} />
+    <SourceListing fileName="target.ts" sourceText={v01.targetTs} />
+    <SourceListing fileName="parse-target.ts" sourceText={v01.parseTargetTs} />
+    <SourceListing fileName="parse-source.ts" sourceText={v01.parseSourceTs} />
+    <SourceListing fileName="run-bytecode.ts" sourceText={v01.runBytecodeTs} />
+    <SourceListing fileName="compile.ts" sourceText={v01.compileTs} />
+    <SourceListing fileName="bytecode.ts" sourceText={v01.bytecodeTs} />
   </main>
 );
 
