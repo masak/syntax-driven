@@ -29,8 +29,10 @@ const SourceListing = (props) => {
     sourceText = deindent(sourceText);
     
     return (
-      <p>{fileName}:</p>
-      <pre class="source-listing"><code>{sourceText}</code></pre>
+      <div class="source-listing">
+        <p>{fileName}:</p>
+        <pre class="source-listing"><code>{sourceText}</code></pre>
+      </div>
     );
 };
 
