@@ -165,8 +165,7 @@ F0 -- r1 --     return %r1</code></pre>
     </p>
 
     <p>
-        <em>&lt;some statistics here, as well as the full source
-        code&gt;</em>
+        <em>&lt;some statistics here&gt;</em>
     </p>
 
     <SourceListing sourceText={v01.confTs} />

@@ -4,10 +4,15 @@ function stripSurroundingEmpty(s) {
     return s.replace(/^( )*\n/, "").replace(/\n( )*$/, "");
 }
 
+const EMPTY_LINE = /^\s*$/;
+
 function deindent(s) {
     let lines = s.split(/\n/);
     let minIndent = 99;
     for (let line of lines) {
+        if (EMPTY_LINE.test(line)) {
+            continue;
+        }
         let m = line.match(/^( *)/);
         let n = m[1].length;
         if (n < minIndent) {
