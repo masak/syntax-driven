@@ -12,13 +12,19 @@ import {
 } from "./parse-source";
 import {
     Instr,
+    InstrSetPrimCarReg,
+    InstrSetPrimCdrReg,
     InstrSetPrimIdRegSym,
     InstrSetPrimTypeReg,
     InstrArgsStart,
     InstrArgOne,
     InstrArgsEnd,
+    InstrJmp,
+    InstrJmpUnlessReg,
     InstrSetApply,
     InstrSetGetGlobal,
+    InstrSetGetSymbol,
+    InstrSetReg,
     InstrReturnReg,
     Register,
     Target,
@@ -43,6 +49,8 @@ function qSym(ast: Ast): string | null {
     return null;
 }
 
+const REGISTER_NOT_YET_KNOWN = -1;
+
 export function compile(
     source: Source,
     env: Env,
@@ -55,7 +63,19 @@ export function compile(
 
     let instrs: Array<Instr> = [];
     let registerMap: Map<string, Register> = new Map();
+    let labelMap: Map<string, number> = new Map();
     let maxReqReg = -1;
+
+    function nextAvailableLabel(prefix: string): string {
+        let n = 1;
+        while (true) {
+            let label = `${prefix}-${n}`;
+            if (!labelMap.has(label)) {
+                return label;
+            }
+            n += 1;
+        }
+    }
 
     // param handling
     if (source.params instanceof AstList) {
@@ -76,7 +96,12 @@ export function compile(
     function handle(ast: Ast): Register {
         if (ast instanceof AstSymbol) {
             let name = ast.name;
-            if (registerMap.has(name)) {
+            if (selfQuotingSymbols.has(name)) {
+                let symbolReg = nextReg();
+                instrs.push(new InstrSetGetSymbol(symbolReg, name));
+                return symbolReg;
+            }
+            else if (registerMap.has(name)) {
                 return registerMap.get(name)!;
             }
             else if (env.has(name)) {
@@ -125,6 +150,59 @@ export function compile(
                 instrs.push(new InstrSetPrimTypeReg(targetReg, r1r));
                 return targetReg;
             }
+            else if (opName === "car") {
+                if (args.length < 1) {
+                    throw new Error("Not enough operands for 'car'");
+                }
+                let r1 = args[0];
+                let r1r = handle(r1);
+                let targetReg = nextReg();
+                instrs.push(new InstrSetPrimCarReg(targetReg, r1r));
+                return targetReg;
+            }
+            else if (opName === "cdr") {
+                if (args.length < 1) {
+                    throw new Error("Not enough operands for 'cdr'");
+                }
+                let r1 = args[0];
+                let r1r = handle(r1);
+                let targetReg = nextReg();
+                instrs.push(new InstrSetPrimCdrReg(targetReg, r1r));
+                return targetReg;
+            }
+            else if (opName === "if") {
+                let fixups: Array<InstrSetReg> = [];
+                let ifEndLabel = nextAvailableLabel("if-end");
+                for (let i = 0; i < args.length - 1; i += 2) {
+                    let test = args[i];
+                    let rTest = handle(test);
+                    let branchLabel = nextAvailableLabel("if-branch");
+                    instrs.push(new InstrJmpUnlessReg(branchLabel, rTest));
+                    let consequent = args[i + 1];
+                    let rConsequent = handle(consequent);
+                    let setReg =
+                        new InstrSetReg(REGISTER_NOT_YET_KNOWN, rConsequent);
+                    instrs.push(setReg);
+                    fixups.push(setReg);
+                    instrs.push(new InstrJmp(ifEndLabel));
+                    labelMap.set(branchLabel, instrs.length);
+                }
+                if (args.length % 2 !== 0) {
+                    let consequent = args[args.length - 1];
+                    let rConsequent = handle(consequent);
+                    let setReg =
+                        new InstrSetReg(REGISTER_NOT_YET_KNOWN, rConsequent);
+                    instrs.push(setReg);
+                    fixups.push(setReg);
+                }
+                labelMap.set(ifEndLabel, instrs.length);
+
+                let resultRegister = nextReg();
+                for (let instr of fixups) {
+                    instr.targetReg = resultRegister;
+                }
+                return resultRegister;
+            }
             else if (registerMap.has(opName)) {
                 let funcReg = registerMap.get(opName)!;
                 let argRegs = args.map(handle);
@@ -137,10 +215,10 @@ export function compile(
                 instrs.push(new InstrSetApply(targetReg, funcReg));
                 return targetReg;
             }
-            else if (env.has(opName)) {
+            else if (env.has(opName) || source.name === opName) {
                 let argRegs = args.map(handle);
                 let targetReg: Register;
-                if (conf.inlineKnownCalls) {
+                if (env.has(opName) && conf.inlineKnownCalls) {
                     targetReg = inline(
                         env.get(opName), argRegs, instrs, unusedReg
                     );
@@ -181,6 +259,7 @@ export function compile(
         source.name,
         { reqCount, regCount },
         instrs,
+        labelMap,
     );
 }
 

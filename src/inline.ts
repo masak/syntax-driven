@@ -3,11 +3,17 @@ import {
     InstrArgOne,
     InstrArgsEnd,
     InstrArgsStart,
+    InstrJmp,
+    InstrJmpUnlessReg,
     InstrSetApply,
     InstrSetGetGlobal,
+    InstrSetGetSymbol,
+    InstrSetPrimCarReg,
+    InstrSetPrimCdrReg,
     InstrSetPrimIdRegSym,
     InstrSetPrimTypeReg,
     InstrReturnReg,
+    InstrSetReg,
     Register,
     Target,
 } from "./target";
@@ -43,9 +49,30 @@ export function inline(
                 instr.name,
             ));
         }
+        else if (instr instanceof InstrSetGetSymbol) {
+            registerMap.set(instr.targetReg, unusedReg++);
+            instrs.push(new InstrSetGetSymbol(
+                registerMap.get(instr.targetReg)!,
+                instr.name,
+            ));
+        }
         else if (instr instanceof InstrSetPrimTypeReg) {
             registerMap.set(instr.targetReg, unusedReg++);
             instrs.push(new InstrSetPrimTypeReg(
+                registerMap.get(instr.targetReg)!,
+                registerMap.get(instr.objectReg)!,
+            ));
+        }
+        else if (instr instanceof InstrSetPrimCarReg) {
+            registerMap.set(instr.targetReg, unusedReg++);
+            instrs.push(new InstrSetPrimCarReg(
+                registerMap.get(instr.targetReg)!,
+                registerMap.get(instr.objectReg)!,
+            ));
+        }
+        else if (instr instanceof InstrSetPrimCdrReg) {
+            registerMap.set(instr.targetReg, unusedReg++);
+            instrs.push(new InstrSetPrimCdrReg(
                 registerMap.get(instr.targetReg)!,
                 registerMap.get(instr.objectReg)!,
             ));
@@ -67,6 +94,19 @@ export function inline(
                 registerMap.get(instr.targetReg)!,
                 registerMap.get(instr.funcReg)!,
             ));
+        }
+        else if (instr instanceof InstrSetReg) {
+            registerMap.set(instr.targetReg, unusedReg++);
+            instrs.push(new InstrSetApply(
+                registerMap.get(instr.targetReg)!,
+                registerMap.get(instr.sourceReg)!,
+            ));
+        }
+        else if (instr instanceof InstrJmp) {
+            throw new Error("Need to handle labels/jumps in 'inline'");
+        }
+        else if (instr instanceof InstrJmpUnlessReg) {
+            throw new Error("Need to handle labels/jumps in 'inline'");
         }
         else {
             let _coverageCheck: never = instr;

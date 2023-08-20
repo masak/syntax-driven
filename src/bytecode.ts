@@ -6,17 +6,25 @@ import {
     InstrArgOne,
     InstrArgsEnd,
     InstrArgsStart,
+    InstrJmp,
+    InstrJmpUnlessReg,
     InstrSetApply,
     InstrSetGetGlobal,
+    InstrSetGetSymbol,
+    InstrSetPrimCarReg,
+    InstrSetPrimCdrReg,
     InstrSetPrimIdRegSym,
     InstrSetPrimTypeReg,
     InstrReturnReg,
+    InstrSetReg,
     Target,
 } from "./target";
 
 export const OPCODE_SET_PRIM_ID_REG_SYM = 0x00;
 export const OPCODE_SET_PRIM_ID_REG_NIL = 0x01;
 export const OPCODE_SET_PRIM_TYPE_REG = 0x02;
+export const OPCODE_SET_PRIM_CAR_REG = 0x03;
+export const OPCODE_SET_PRIM_CDR_REG = 0x04;
 
 export const OPCODE_ARGS_START = 0x10;
 export const OPCODE_ARG_ONE = 0x11;
@@ -24,8 +32,12 @@ export const OPCODE_ARGS_END = 0x18;
 export const OPCODE_SET_APPLY = 0x19;
 
 export const OPCODE_SET_GLOBAL = 0x20;
+export const OPCODE_SET_REG = 0x21;
+export const OPCODE_SET_SYMBOL = 0x22;
 
-export const OPCODE_RETURN_REG = 0x30;
+export const OPCODE_JMP = 0x30;
+export const OPCODE_UNLESS_JMP = 0x31;
+export const OPCODE_RETURN_REG = 0x32;
 
 const SIZE = 1_024;
 
@@ -144,11 +156,11 @@ class Writer {
             func.body.length,
         );
         for (let instr of func.body) {
-            this.writeInstr(instr);
+            this.writeInstr(instr, func.labels);
         }
     }
 
-    writeInstr(instr: Instr): void {
+    writeInstr(instr: Instr, labels: Map<string, number>): void {
         if (instr instanceof InstrSetPrimIdRegSym) {
             if (instr.rightSym === "nil") {
                 this.write4Bytes(
@@ -181,6 +193,22 @@ class Writer {
         else if (instr instanceof InstrSetPrimTypeReg) {
             this.write4Bytes(
                 OPCODE_SET_PRIM_TYPE_REG,
+                instr.targetReg,
+                instr.objectReg,
+                0,
+            );
+        }
+        else if (instr instanceof InstrSetPrimCarReg) {
+            this.write4Bytes(
+                OPCODE_SET_PRIM_CAR_REG,
+                instr.targetReg,
+                instr.objectReg,
+                0,
+            );
+        }
+        else if (instr instanceof InstrSetPrimCdrReg) {
+            this.write4Bytes(
+                OPCODE_SET_PRIM_CDR_REG,
                 instr.targetReg,
                 instr.objectReg,
                 0,
@@ -233,11 +261,60 @@ class Writer {
                 0,
             );
         }
+        else if (instr instanceof InstrSetGetSymbol) {
+            let symPos = this.strings.get(instr.name);
+            if (symPos === undefined) {
+                throw new Error(
+                    "Precondition broken: string " +
+                    `'${instr.name}' was not stored`
+                );
+            }
+            let symPosHighByte = Math.floor(symPos / 0x100);
+            let symPosLowByte = symPos % 0x100;
+            this.write4Bytes(
+                OPCODE_SET_SYMBOL,
+                instr.targetReg,
+                symPosHighByte,
+                symPosLowByte,
+            );
+        }
         else if (instr instanceof InstrReturnReg) {
             this.write4Bytes(
                 OPCODE_RETURN_REG,
                 0,
                 instr.returnReg,
+                0,
+            );
+        }
+        else if (instr instanceof InstrJmp) {
+            let label = labels.get(instr.label);
+            if (label === undefined) {
+                throw new Error(`Label '${instr.label} not found`);
+            }
+            this.write4Bytes(
+                OPCODE_JMP,
+                0,
+                label,
+                0,
+            );
+        }
+        else if (instr instanceof InstrJmpUnlessReg) {
+            let label = labels.get(instr.label);
+            if (label === undefined) {
+                throw new Error(`Label '${instr.label} not found`);
+            }
+            this.write4Bytes(
+                OPCODE_UNLESS_JMP,
+                instr.testReg,
+                label,
+                0,
+            );
+        }
+        else if (instr instanceof InstrSetReg) {
+            this.write4Bytes(
+                OPCODE_SET_REG,
+                instr.targetReg,
+                instr.sourceReg,
                 0,
             );
         }
