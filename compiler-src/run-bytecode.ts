@@ -6,6 +6,7 @@ import {
     OPCODE_RETURN_REG,
     OPCODE_SET_APPLY,
     OPCODE_SET_GLOBAL,
+    OPCODE_SET_PRIM_ID_REG_NIL,
     OPCODE_SET_PRIM_ID_REG_SYM,
     OPCODE_SET_PRIM_TYPE_REG,
 } from "./bytecode";
@@ -52,6 +53,20 @@ export class BcRuntime {
             let leftValue = registers[leftReg];
             if (leftValue instanceof ValSymbol) {
                 registers[targetReg] = leftValue.name === rightSym
+                    ? SYMBOL_T
+                    : SYMBOL_NIL;
+            }
+            else {
+                registers[targetReg] = SYMBOL_NIL;
+            }
+            return NEXT;
+        }
+        else if (opcode === OPCODE_SET_PRIM_ID_REG_NIL) {
+            let targetReg = instr[1];
+            let leftReg = instr[2];
+            let leftValue = registers[leftReg];
+            if (leftValue instanceof ValSymbol) {
+                registers[targetReg] = leftValue.name === "nil"
                     ? SYMBOL_T
                     : SYMBOL_NIL;
             }

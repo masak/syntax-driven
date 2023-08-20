@@ -15,7 +15,8 @@ import {
 } from "./target";
 
 export const OPCODE_SET_PRIM_ID_REG_SYM = 0x00;
-export const OPCODE_SET_PRIM_TYPE_REG = 0x01;
+export const OPCODE_SET_PRIM_ID_REG_NIL = 0x01;
+export const OPCODE_SET_PRIM_TYPE_REG = 0x02;
 
 export const OPCODE_ARGS_START = 0x10;
 export const OPCODE_ARG_ONE = 0x11;
@@ -149,23 +150,33 @@ class Writer {
 
     writeInstr(instr: Instr): void {
         if (instr instanceof InstrSetPrimIdRegSym) {
-            let symPos = this.strings.get(instr.rightSym);
-            if (symPos === undefined) {
-                throw new Error(
-                    "Precondition broken: string " +
-                    `'${instr.rightSym}' was not stored`
+            if (instr.rightSym === "nil") {
+                this.write4Bytes(
+                    OPCODE_SET_PRIM_ID_REG_NIL,
+                    instr.targetReg,
+                    instr.leftReg,
+                    0,
                 );
             }
-            if (symPos > 0xFF) {
-                throw new Error("Temporary limitation exceeded");
-                // XXX: time to get a separate "get symbol" instruction
+            else {
+                let symPos = this.strings.get(instr.rightSym);
+                if (symPos === undefined) {
+                    throw new Error(
+                        "Precondition broken: string " +
+                        `'${instr.rightSym}' was not stored`
+                    );
+                }
+                if (symPos > 0xFF) {
+                    throw new Error("Temporary limitation exceeded");
+                    // XXX: time to get a separate "get symbol" instruction
+                }
+                this.write4Bytes(
+                    OPCODE_SET_PRIM_ID_REG_SYM,
+                    instr.targetReg,
+                    instr.leftReg,
+                    symPos,
+                );
             }
-            this.write4Bytes(
-                OPCODE_SET_PRIM_ID_REG_SYM,
-                instr.targetReg,
-                instr.leftReg,
-                symPos,
-            );
         }
         else if (instr instanceof InstrSetPrimTypeReg) {
             this.write4Bytes(
