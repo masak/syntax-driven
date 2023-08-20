@@ -2,10 +2,10 @@ import test from "ava";
 
 import {
     Bytecode,
-} from "../compiler-src/bytecode";
+} from "../src/bytecode";
 import {
     BcRuntime,
-} from "../compiler-src/run-bytecode";
+} from "../src/run-bytecode";
 import {
     char,
     list,
@@ -13,7 +13,7 @@ import {
     symbol,
     SYMBOL_NIL,
     SYMBOL_T,
-} from "../compiler-src/val";
+} from "../src/val";
 
 import {
     envAfterNo,

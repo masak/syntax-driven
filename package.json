@@ -20,7 +20,7 @@
     "test-page": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "test": "tsc && ava",
-    "lint": "eslint compiler-src/*.ts test/*.ts",
-    "prettier": "prettier --write compiler-src/*.ts test/*.ts"
+    "lint": "eslint src/*.ts test/*.ts",
+    "prettier": "prettier --write src/*.ts test/*.ts"
   }
 }

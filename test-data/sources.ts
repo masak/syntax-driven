@@ -1,6 +1,6 @@
 import {
     Source,
-} from "../compiler-src/source";
+} from "../src/source";
 
 function source(contents: string): Source {
     return new Source(contents);

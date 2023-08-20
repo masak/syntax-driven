@@ -2,14 +2,14 @@ import test from "ava";
 
 import {
     compile,
-} from "../compiler-src/compile";
+} from "../src/compile";
 import {
     stringifyTarget,
-} from "../compiler-src/target";
+} from "../src/target";
 import {
     OPT_ALL,
     OPT_NONE,
-} from "../compiler-src/conf";
+} from "../src/conf";
 
 import sources from "../test-data/sources";
 import targetsUnopt from "../test-data/targets-unopt";

@@ -1,6 +1,6 @@
 import {
     Env,
-} from "../compiler-src/env";
+} from "../src/env";
 
 import sources from "./sources";
 

@@ -1,9 +1,9 @@
 import {
     Target,
-} from "../compiler-src/target";
+} from "../src/target";
 import {
     parse,
-} from "../compiler-src/parse-target";
+} from "../src/parse-target";
 
 let expectedTargets = new Map<string, Target>([
     ["no", parse(`
