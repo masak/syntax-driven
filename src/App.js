@@ -51,13 +51,15 @@ const App = (props) => (
         here is the instruction set.
     </p>
 
-    <pre><code>24 tr r1 sy     %tr ← (id %r1 symbol) { "\n" }
-28 tr r1 --     %tr ← (type %r1)      { "\n" }
-50 -- -- --     (start of arguments)       { "\n" }
-51 -- r1 --       add a single argument    { "\n" }
-53 -- -- --     (end of arguments)         { "\n" }
-61 tr r1 --     %tr ← (apply %r1 &lt;args&gt;) { "\n" }
-F0 -- r1 --     return %r1</code></pre>
+    <pre><code>00 tr r1 sy     tr ← (id r1 symbol) { "\n" }
+01 tr r1 --     tr ← (id r1 nil)             { "\n" }
+02 r1 -- --     tr ← (type r1)               { "\n" }
+10 -- -- --     (start of arguments)         { "\n" }
+11 -- r1 --       add a single argument      { "\n" }
+18 -- -- --     (end of arguments)           { "\n" }
+19 tr r1 --     tr ← (apply r1 &lt;args&gt;) { "\n" }
+20 tr r1 --     tr ← r1                      { "\n" }
+30 -- r1 --     return r1</code></pre>
 
     <p>
         we don't actually need the function to use 2 registers;
