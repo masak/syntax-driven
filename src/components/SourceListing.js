@@ -43,7 +43,7 @@ const SourceListing = (props) => {
     
     return (
       <div class="source-listing">
-        <p onClick={handleClick}>
+        <p onClick={handleClick} class="header">
           <span class="triangle">
             {expanded ? downPointingTriangle : rightPointingTriangle}
           </span>
