@@ -1,4 +1,5 @@
 import React from 'react';
+import { useState } from 'react';
 
 function stripSurroundingEmpty(s) {
     return s.replace(/^( )*\n/, "").replace(/\n( )*$/, "");
@@ -24,14 +25,32 @@ function deindent(s) {
     ).join("\n");
 }
 
+const rightPointingTriangle = "\u25B6";
+const downPointingTriangle = "\u25BC";
+
+const VISIBLE = {};
+const HIDDEN = { display: "none" };
+
 const SourceListing = (props) => {
+    let [expanded, setExpanded] = useState(false);
+
     let sourceText = stripSurroundingEmpty(props.sourceText);
     sourceText = deindent(sourceText);
+
+    function handleClick() {
+        setExpanded(!expanded);
+    }
     
     return (
       <div class="source-listing">
-        <p>{props.fileName}:</p>
-        <pre class="source-listing"><code>{sourceText}</code></pre>
+        <p onClick={handleClick}>
+          {expanded ? downPointingTriangle : rightPointingTriangle}
+          {" "}
+          {props.fileName}:
+        </p>
+        <pre class="source-listing" style={expanded ? VISIBLE : HIDDEN}>
+          <code>{sourceText}</code>
+        </pre>
       </div>
     );
 };
