@@ -44,9 +44,12 @@ const SourceListing = (props) => {
     return (
       <div class="source-listing">
         <p onClick={handleClick}>
-          {expanded ? downPointingTriangle : rightPointingTriangle}
+          <span class="triangle">
+            {expanded ? downPointingTriangle : rightPointingTriangle}
+          </span>
           {" "}
-          {props.fileName}:
+          {props.fileName}
+          {expanded ? ":" : ""}
         </p>
         <pre class="source-listing" style={expanded ? VISIBLE : HIDDEN}>
           <code>{sourceText}</code>
