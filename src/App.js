@@ -170,17 +170,17 @@ const App = (props) => (
         <em>&lt;some statistics here&gt;</em>
     </p>
 
+    <SourceListing fileName="bytecode.ts" sourceText={v01.bytecodeTs} />
+    <SourceListing fileName="compile.ts" sourceText={v01.compileTs} />
     <SourceListing fileName="conf.ts" sourceText={v01.confTs} />
-    <SourceListing fileName="source.ts" sourceText={v01.sourceTs} />
     <SourceListing fileName="env.ts" sourceText={v01.envTs} />
     <SourceListing fileName="inline.ts" sourceText={v01.inlineTs} />
-    <SourceListing fileName="val.ts" sourceText={v01.valTs} />
-    <SourceListing fileName="target.ts" sourceText={v01.targetTs} />
-    <SourceListing fileName="parse-target.ts" sourceText={v01.parseTargetTs} />
     <SourceListing fileName="parse-source.ts" sourceText={v01.parseSourceTs} />
+    <SourceListing fileName="parse-target.ts" sourceText={v01.parseTargetTs} />
     <SourceListing fileName="run-bytecode.ts" sourceText={v01.runBytecodeTs} />
-    <SourceListing fileName="compile.ts" sourceText={v01.compileTs} />
-    <SourceListing fileName="bytecode.ts" sourceText={v01.bytecodeTs} />
+    <SourceListing fileName="source.ts" sourceText={v01.sourceTs} />
+    <SourceListing fileName="target.ts" sourceText={v01.targetTs} />
+    <SourceListing fileName="val.ts" sourceText={v01.valTs} />
   </main>
 );
 
