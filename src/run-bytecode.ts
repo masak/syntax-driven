@@ -17,7 +17,6 @@ import {
     Val,
     ValChar,
     ValByteFn,
-    ValFn,
     ValPair,
     ValSymbol,
 } from "./val";
@@ -93,12 +92,7 @@ export class BcRuntime {
             if (value instanceof ValChar) {
                 result = symbol("char");
             }
-            else if (value instanceof ValFn) {
-                result = symbol("pair");
-            }
-            else if (value instanceof ValFn ||
-                        value instanceof ValByteFn ||
-                        value instanceof ValPair) {
+            else if (value instanceof ValByteFn || value instanceof ValPair) {
                 result = symbol("pair");
             }
             else if (value instanceof ValSymbol) {

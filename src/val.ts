@@ -1,10 +1,5 @@
-import {
-    Target,
-} from "./target";
-
 export type Val =
     ValChar |
-    ValFn |
     ValByteFn |
     ValPair |
     ValSymbol;
@@ -47,11 +42,6 @@ export function symbol(name: string) {
     return new ValSymbol(name);
 }
 
-export class ValFn {
-    constructor(public fn: Target) {
-    }
-}
-
 export class ValByteFn {
     constructor(public addr: number) {
     }
@@ -68,11 +58,8 @@ export function showVal(val: Val): string {
         // TODO: Also support the sugared form
         return `(${val.a} . ${val.d})`;
     }
-    else if (val instanceof ValFn) {
-        return `<fn: ${val.fn.name}>`;
-    }
     else if (val instanceof ValByteFn) {
-        return `<bytefn>`;
+        return `<bytefn ${val.addr.toString(16)}>`;
     }
     else {
         let _coverageCheck: never = val;
