@@ -1,15 +1,13 @@
 import {
+    Ast,
+    AstList,
+    AstQuote,
+    AstSymbol,
     Source,
 } from "./source";
 import {
     Env,
 } from "./env";
-import {
-    Ast,
-    AstList,
-    AstQuote,
-    AstSymbol,
-} from "./parse-source";
 import {
     Instr,
     InstrSetPrimCarReg,
