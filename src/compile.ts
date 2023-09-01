@@ -22,9 +22,10 @@ import {
     InstrSetApply,
     InstrSetGetGlobal,
     InstrSetGetSymbol,
-    InstrSetReg,
     InstrReturnReg,
+    isSetInstr,
     Register,
+    SetInstr,
     Target,
 } from "./target";
 import {
@@ -49,6 +50,7 @@ function qSym(ast: Ast): string | null {
 
 const REGISTER_NOT_YET_KNOWN = -1;
 const REGISTER_NOT_USED = -2;
+const REGISTER_NONE_REQUESTED = -3;
 
 export function compile(
     source: Source,
@@ -94,11 +96,22 @@ export function compile(
     let topIndex = instrs.length;
 
     // body
-    function handle(ast: Ast, isTailContext: boolean): Register {
+    function handle(
+        ast: Ast,
+        isTailContext: boolean,
+        resultRegister = REGISTER_NONE_REQUESTED,
+    ): Register {
+
+        function resultRegOrNextReg() {
+            return resultRegister === REGISTER_NONE_REQUESTED
+                ? nextReg()
+                : resultRegister;
+        }
+
         if (ast instanceof AstSymbol) {
             let name = ast.name;
             if (selfQuotingSymbols.has(name)) {
-                let symbolReg = nextReg();
+                let symbolReg = resultRegOrNextReg();
                 instrs.push(new InstrSetGetSymbol(symbolReg, name));
                 return symbolReg;
             }
@@ -106,7 +119,7 @@ export function compile(
                 return registerMap.get(name)!;
             }
             else if (env.has(name)) {
-                let globalReg = nextReg();
+                let globalReg = resultRegOrNextReg();
                 instrs.push(new InstrSetGetGlobal(globalReg, name));
                 return globalReg;
             }
@@ -131,7 +144,7 @@ export function compile(
                 let r2Sym = qSym(r2);
                 if (!qSym(r1) && r2Sym !== null) {
                     let r1r = handle(r1, false);
-                    let targetReg = nextReg();
+                    let targetReg = resultRegOrNextReg();
                     instrs.push(
                         new InstrSetPrimIdRegSym(targetReg, r1r, r2Sym)
                     );
@@ -147,7 +160,7 @@ export function compile(
                 }
                 let r1 = args[0];
                 let r1r = handle(r1, false);
-                let targetReg = nextReg();
+                let targetReg = resultRegOrNextReg();
                 instrs.push(new InstrSetPrimTypeReg(targetReg, r1r));
                 return targetReg;
             }
@@ -157,7 +170,7 @@ export function compile(
                 }
                 let r1 = args[0];
                 let r1r = handle(r1, false);
-                let targetReg = nextReg();
+                let targetReg = resultRegOrNextReg();
                 instrs.push(new InstrSetPrimCarReg(targetReg, r1r));
                 return targetReg;
             }
@@ -167,12 +180,12 @@ export function compile(
                 }
                 let r1 = args[0];
                 let r1r = handle(r1, false);
-                let targetReg = nextReg();
+                let targetReg = resultRegOrNextReg();
                 instrs.push(new InstrSetPrimCdrReg(targetReg, r1r));
                 return targetReg;
             }
             else if (opName === "if") {
-                let fixups: Array<InstrSetReg> = [];
+                let fixups: Array<SetInstr> = [];
                 let ifEndLabel = nextAvailableLabel("if-end");
                 for (let i = 0; i < args.length - 1; i += 2) {
                     let test = args[i];
@@ -180,33 +193,45 @@ export function compile(
                     let branchLabel = nextAvailableLabel("if-branch");
                     instrs.push(new InstrJmpUnlessReg(branchLabel, rTest));
                     let consequent = args[i + 1];
-                    let rConsequent = handle(consequent, isTailContext);
+                    let rConsequent = handle(
+                        consequent,
+                        isTailContext,
+                        REGISTER_NOT_YET_KNOWN,
+                    );
                     if (rConsequent !== REGISTER_NOT_USED) {
-                        let setReg = new InstrSetReg(
-                            REGISTER_NOT_YET_KNOWN,
-                            rConsequent,
-                        );
-                        instrs.push(setReg);
-                        fixups.push(setReg);
+                        let lastInstr = instrs[instrs.length - 1];
+                        if (!isSetInstr(lastInstr)) {
+                            throw new Error(
+                                "Not a set instr: " +
+                                lastInstr.constructor.name
+                            );
+                        }
+                        fixups.push(lastInstr);
                         instrs.push(new InstrJmp(ifEndLabel));
                     }
                     labelMap.set(branchLabel, instrs.length);
                 }
                 if (args.length % 2 !== 0) {
                     let consequent = args[args.length - 1];
-                    let rConsequent = handle(consequent, isTailContext);
+                    let rConsequent = handle(
+                        consequent,
+                        isTailContext,
+                        REGISTER_NOT_YET_KNOWN,
+                    );
                     if (rConsequent !== REGISTER_NOT_USED) {
-                        let setReg = new InstrSetReg(
-                            REGISTER_NOT_YET_KNOWN,
-                            rConsequent,
-                        );
-                        instrs.push(setReg);
-                        fixups.push(setReg);
+                        let lastInstr = instrs[instrs.length - 1];
+                        if (!isSetInstr(lastInstr)) {
+                            throw new Error(
+                                "Not a set instr: " +
+                                lastInstr.constructor.name
+                            );
+                        }
+                        fixups.push(lastInstr);
                     }
                 }
                 labelMap.set(ifEndLabel, instrs.length);
 
-                let resultRegister = nextReg();
+                let resultRegister = resultRegOrNextReg();
                 for (let instr of fixups) {
                     instr.targetReg = resultRegister;
                 }
@@ -220,7 +245,7 @@ export function compile(
                     instrs.push(new InstrArgOne(reg));
                 }
                 instrs.push(new InstrArgsEnd());
-                let targetReg = nextReg();
+                let targetReg = resultRegOrNextReg();
                 instrs.push(new InstrSetApply(targetReg, funcReg));
                 return targetReg;
             }
@@ -256,9 +281,8 @@ export function compile(
                                 // no need to do anything; arg matches up
                             }
                             else {
-                                let argReg = handle(arg, false);
                                 let paramReg = registerMap.get(param.name)!;
-                                instrs.push(new InstrSetReg(paramReg, argReg));
+                                handle(arg, false, paramReg);
                             }
                             index += 1;
                         }
@@ -279,7 +303,7 @@ export function compile(
                         instrs.push(new InstrArgOne(reg));
                     }
                     instrs.push(new InstrArgsEnd());
-                    targetReg = nextReg();
+                    targetReg = resultRegOrNextReg();
                     instrs.push(new InstrSetApply(targetReg, funcReg));
                 }
                 return targetReg;

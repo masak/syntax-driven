@@ -6,10 +6,6 @@ export interface Header {
 export type Register = number;
 
 export type Instr =
-    InstrSetPrimCarReg |
-    InstrSetPrimCdrReg |
-    InstrSetPrimIdRegSym |
-    InstrSetPrimTypeReg |
     InstrArgsStart |
     InstrArgOne |
     InstrArgsEnd |
@@ -17,9 +13,21 @@ export type Instr =
     InstrSetApply |
     InstrSetGetGlobal |
     InstrSetGetSymbol |
-    InstrSetReg |
+    InstrSetPrimCarReg |
+    InstrSetPrimCdrReg |
+    InstrSetPrimIdRegSym |
+    InstrSetPrimTypeReg |
     InstrReturnReg |
     InstrJmpUnlessReg;
+
+export type SetInstr =
+    InstrSetApply |
+    InstrSetGetGlobal |
+    InstrSetGetSymbol |
+    InstrSetPrimCarReg |
+    InstrSetPrimCdrReg |
+    InstrSetPrimIdRegSym |
+    InstrSetPrimTypeReg;
 
 export class InstrSetPrimCarReg {
     constructor(public targetReg: Register, public objectReg: Register) {
@@ -80,11 +88,6 @@ export class InstrSetGetSymbol {
     }
 }
 
-export class InstrSetReg {
-    constructor(public targetReg: Register, public sourceReg: Register) {
-    }
-}
-
 export class InstrReturnReg {
     constructor(public returnReg: Register) {
     }
@@ -93,6 +96,10 @@ export class InstrReturnReg {
 export class InstrJmpUnlessReg {
     constructor(public label: string, public testReg: Register) {
     }
+}
+
+export function isSetInstr(instr: Instr): instr is SetInstr {
+    return instr.hasOwnProperty("targetReg");
 }
 
 export class Target {
@@ -159,12 +166,6 @@ function dump(
         }
         else if (instr instanceof InstrReturnReg) {
             line = `return %${instr.returnReg}`;
-        }
-        else if (instr instanceof InstrSetReg) {
-            line = set(
-                instr.targetReg,
-                `%${instr.sourceReg}`,
-            );
         }
         else if (instr instanceof InstrJmp) {
             line = `jmp :${instr.label}`;
