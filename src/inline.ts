@@ -28,6 +28,11 @@ export function inline(
         registerMap.set(i, argRegs[i]);
     }
 
+    // XXX: The assumption that target registers are never re-used was just
+    //      broken as of the `if` compiler logic. A rethink around the
+    //      below logic is required, as soon as `some` gets inlined somewhere
+    //      (which we know will happen with `map`).
+
     let calleeInstrs = callee.body;
     for (let instr of calleeInstrs) {
         if (instr instanceof InstrSetPrimIdRegSym) {
