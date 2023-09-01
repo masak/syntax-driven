@@ -48,6 +48,7 @@ function qSym(ast: Ast): string | null {
 }
 
 const REGISTER_NOT_YET_KNOWN = -1;
+const REGISTER_NOT_USED = -2;
 
 export function compile(
     source: Source,
@@ -90,8 +91,10 @@ export function compile(
         throw new Error("rest parameter -- todo");
     }
 
+    let topIndex = instrs.length;
+
     // body
-    function handle(ast: Ast): Register {
+    function handle(ast: Ast, isTailContext: boolean): Register {
         if (ast instanceof AstSymbol) {
             let name = ast.name;
             if (selfQuotingSymbols.has(name)) {
@@ -127,7 +130,7 @@ export function compile(
                 let r2 = args[1];
                 let r2Sym = qSym(r2);
                 if (!qSym(r1) && r2Sym !== null) {
-                    let r1r = handle(r1);
+                    let r1r = handle(r1, false);
                     let targetReg = nextReg();
                     instrs.push(
                         new InstrSetPrimIdRegSym(targetReg, r1r, r2Sym)
@@ -143,7 +146,7 @@ export function compile(
                     throw new Error("Not enough operands for 'type'");
                 }
                 let r1 = args[0];
-                let r1r = handle(r1);
+                let r1r = handle(r1, false);
                 let targetReg = nextReg();
                 instrs.push(new InstrSetPrimTypeReg(targetReg, r1r));
                 return targetReg;
@@ -153,7 +156,7 @@ export function compile(
                     throw new Error("Not enough operands for 'car'");
                 }
                 let r1 = args[0];
-                let r1r = handle(r1);
+                let r1r = handle(r1, false);
                 let targetReg = nextReg();
                 instrs.push(new InstrSetPrimCarReg(targetReg, r1r));
                 return targetReg;
@@ -163,7 +166,7 @@ export function compile(
                     throw new Error("Not enough operands for 'cdr'");
                 }
                 let r1 = args[0];
-                let r1r = handle(r1);
+                let r1r = handle(r1, false);
                 let targetReg = nextReg();
                 instrs.push(new InstrSetPrimCdrReg(targetReg, r1r));
                 return targetReg;
@@ -173,25 +176,33 @@ export function compile(
                 let ifEndLabel = nextAvailableLabel("if-end");
                 for (let i = 0; i < args.length - 1; i += 2) {
                     let test = args[i];
-                    let rTest = handle(test);
+                    let rTest = handle(test, false);
                     let branchLabel = nextAvailableLabel("if-branch");
                     instrs.push(new InstrJmpUnlessReg(branchLabel, rTest));
                     let consequent = args[i + 1];
-                    let rConsequent = handle(consequent);
-                    let setReg =
-                        new InstrSetReg(REGISTER_NOT_YET_KNOWN, rConsequent);
-                    instrs.push(setReg);
-                    fixups.push(setReg);
-                    instrs.push(new InstrJmp(ifEndLabel));
+                    let rConsequent = handle(consequent, isTailContext);
+                    if (rConsequent !== REGISTER_NOT_USED) {
+                        let setReg = new InstrSetReg(
+                            REGISTER_NOT_YET_KNOWN,
+                            rConsequent,
+                        );
+                        instrs.push(setReg);
+                        fixups.push(setReg);
+                        instrs.push(new InstrJmp(ifEndLabel));
+                    }
                     labelMap.set(branchLabel, instrs.length);
                 }
                 if (args.length % 2 !== 0) {
                     let consequent = args[args.length - 1];
-                    let rConsequent = handle(consequent);
-                    let setReg =
-                        new InstrSetReg(REGISTER_NOT_YET_KNOWN, rConsequent);
-                    instrs.push(setReg);
-                    fixups.push(setReg);
+                    let rConsequent = handle(consequent, isTailContext);
+                    if (rConsequent !== REGISTER_NOT_USED) {
+                        let setReg = new InstrSetReg(
+                            REGISTER_NOT_YET_KNOWN,
+                            rConsequent,
+                        );
+                        instrs.push(setReg);
+                        fixups.push(setReg);
+                    }
                 }
                 labelMap.set(ifEndLabel, instrs.length);
 
@@ -203,7 +214,7 @@ export function compile(
             }
             else if (registerMap.has(opName)) {
                 let funcReg = registerMap.get(opName)!;
-                let argRegs = args.map(handle);
+                let argRegs = args.map((a) => handle(a, false));
                 instrs.push(new InstrArgsStart());
                 for (let reg of argRegs) {
                     instrs.push(new InstrArgOne(reg));
@@ -214,15 +225,53 @@ export function compile(
                 return targetReg;
             }
             else if (env.has(opName) || source.name === opName) {
-                let argRegs = args.map(handle);
                 let targetReg: Register;
                 if (env.has(opName) && conf.inlineKnownCalls) {
+                    let argRegs = args.map((a) => handle(a, false));
                     targetReg = inline(
                         env.get(opName), argRegs, instrs, unusedReg
                     );
                     unusedReg = targetReg + 1;
                 }
+                else if (source.name === opName && isTailContext &&
+                            conf.eliminateTailSelfCalls) {
+                    if (source.params instanceof AstList) {
+                        if (args.length !== source.params.elems.length) {
+                            throw new Error(
+                                "Recursive call params/args length mismatch"
+                            );
+                        }
+                        let index = 0;
+                        // XXX: This logic is a little bit too simplistic,
+                        //      as the real logic should take into account
+                        //      permutations of things; but it will work
+                        //      for now
+                        for (let param of source.params.elems) {
+                            if (!(param instanceof AstSymbol)) {
+                                throw new Error("non-symbol parameter -- todo");
+                            }
+                            let arg = args[index];
+                            if (arg instanceof AstSymbol &&
+                                arg.name === param.name) {
+                                // no need to do anything; arg matches up
+                            }
+                            else {
+                                let argReg = handle(arg, false);
+                                let paramReg = registerMap.get(param.name)!;
+                                instrs.push(new InstrSetReg(paramReg, argReg));
+                            }
+                            index += 1;
+                        }
+                    }
+                    else if (source.params instanceof AstSymbol) {
+                        throw new Error("rest parameter -- todo");
+                    }
+                    labelMap.set("top", topIndex);
+                    instrs.push(new InstrJmp("top"));
+                    targetReg = REGISTER_NOT_USED;
+                }
                 else {
+                    let argRegs = args.map((a) => handle(a, false));
                     let funcReg = nextReg();
                     instrs.push(new InstrSetGetGlobal(funcReg, opName));
                     instrs.push(new InstrArgsStart());
@@ -245,8 +294,10 @@ export function compile(
     }
 
     let returnReg = 0;
+    let statementIndex = 0;
     for (let statement of source.body) {
-        returnReg = handle(statement);
+        let isTailContext = statementIndex === source.body.length - 1;
+        returnReg = handle(statement, isTailContext);
     }
     instrs.push(new InstrReturnReg(returnReg));
 

@@ -21,11 +21,12 @@ let expectedTargets = new Map<string, Target>([
     `)],
 
     ["all", parse(`
-        bcfn all [req: %0..%1; reg: %0..%10]
+        bcfn all [req: %0..%1; reg: %0..%8]
+          :top
             %2 ← (id %1 nil)
             jmp :if-branch-1 unless %2
             %3 ← (get-symbol "t")
-            %10 ← %3
+            %8 ← %3
             jmp :if-end-1
           :if-branch-1
             %4 ← (car %1)
@@ -35,19 +36,13 @@ let expectedTargets = new Map<string, Target>([
             %5 ← (apply %0)
             jmp :if-branch-2 unless %5
             %6 ← (cdr %1)
-            %7 ← (get-global "all")
-            (args-start)
-              (arg-one %0)
-              (arg-one %6)
-            (args-end)
-            %8 ← (apply %7)
-            %10 ← %8
-            jmp :if-end-1
+            %1 ← %6
+            jmp :top
           :if-branch-2
-            %9 ← (get-symbol "nil")
-            %10 ← %9
+            %7 ← (get-symbol "nil")
+            %8 ← %7
           :if-end-1
-            return %10
+            return %8
     `)],
 ]);
 
