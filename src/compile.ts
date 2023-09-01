@@ -1,7 +1,6 @@
 import {
     Ast,
     AstList,
-    AstQuote,
     AstSymbol,
     Source,
 } from "./source";
@@ -9,11 +8,6 @@ import {
     Env,
 } from "./env";
 import {
-    Instr,
-    InstrSetPrimCarReg,
-    InstrSetPrimCdrReg,
-    InstrSetPrimIdRegSym,
-    InstrSetPrimTypeReg,
     InstrArgsStart,
     InstrArgOne,
     InstrArgsEnd,
@@ -35,67 +29,28 @@ import {
 import {
     inline,
 } from "./inline";
+import {
+    Context,
+} from "./compile-context";
+import {
+    primNames,
+    handlePrim,
+} from "./compile-prim";
 
 const selfQuotingSymbols = new Set(["nil", "t"]);
 
-function qSym(ast: Ast): string | null {
-    if (ast instanceof AstSymbol && selfQuotingSymbols.has(ast.name)) {
-        return ast.name;
-    }
-    else if (ast instanceof AstQuote && ast.datum instanceof AstSymbol) {
-        return ast.datum.name;
-    }
-    return null;
-}
-
 const REGISTER_NOT_YET_KNOWN = -1;
 const REGISTER_NOT_USED = -2;
-const REGISTER_NONE_REQUESTED = -3;
 
-class Context {
-    instrs: Array<Instr> = [];
-    unusedReg = 0;
-    labelMap = new Map<string, number>();
-    registerMap = new Map<string, Register>();
-    topIndex = 0;
-
-    constructor(
-        public sourceName: string,
-        public sourceParams: Ast,
-        public env: Env,
-        public conf: Conf,
-    ) {
-    }
-
-    nextReg(): Register {
-        return this.unusedReg++;
-    }
-
-    nextAvailableLabel(prefix: string) {
-        let n = 1;
-        while (true) {
-            let label = `${prefix}-${n}`;
-            if (!this.labelMap.has(label)) {
-                return label;
-            }
-            n += 1;
-        }
-    }
-
-    setTopIndex() {
-        this.topIndex = this.instrs.length;
-    }
-}
-
-function handle(
+export function handle(
     ast: Ast,
     ctx: Context,
     isTailContext: boolean,
-    resultRegister = REGISTER_NONE_REQUESTED,
+    resultRegister: Register | null = null,
 ): Register {
 
     function resultRegOrNextReg() {
-        return resultRegister === REGISTER_NONE_REQUESTED
+        return resultRegister === null
             ? ctx.nextReg()
             : resultRegister;
     }
@@ -127,54 +82,13 @@ function handle(
         }
         let opName = operator.name;
         let args = ast.elems.slice(1);
-        if (opName === "id") {
-            if (args.length < 2) {
-                throw new Error("Not enough operands for 'id'");
-            }
-            let r1 = args[0];
-            let r2 = args[1];
-            let r2Sym = qSym(r2);
-            if (!qSym(r1) && r2Sym !== null) {
-                let r1r = handle(r1, ctx, false);
-                let targetReg = resultRegOrNextReg();
-                ctx.instrs.push(
-                    new InstrSetPrimIdRegSym(targetReg, r1r, r2Sym)
-                );
-                return targetReg;
-            }
-            else {
-                throw new Error("Unrecognized _kind_ of 'id' call");
-            }
-        }
-        else if (opName === "type") {
-            if (args.length < 1) {
-                throw new Error("Not enough operands for 'type'");
-            }
-            let r1 = args[0];
-            let r1r = handle(r1, ctx, false);
-            let targetReg = resultRegOrNextReg();
-            ctx.instrs.push(new InstrSetPrimTypeReg(targetReg, r1r));
-            return targetReg;
-        }
-        else if (opName === "car") {
-            if (args.length < 1) {
-                throw new Error("Not enough operands for 'car'");
-            }
-            let r1 = args[0];
-            let r1r = handle(r1, ctx, false);
-            let targetReg = resultRegOrNextReg();
-            ctx.instrs.push(new InstrSetPrimCarReg(targetReg, r1r));
-            return targetReg;
-        }
-        else if (opName === "cdr") {
-            if (args.length < 1) {
-                throw new Error("Not enough operands for 'cdr'");
-            }
-            let r1 = args[0];
-            let r1r = handle(r1, ctx, false);
-            let targetReg = resultRegOrNextReg();
-            ctx.instrs.push(new InstrSetPrimCdrReg(targetReg, r1r));
-            return targetReg;
+        if (primNames.includes(opName)) {
+            return handlePrim(
+                opName,
+                args,
+                ctx,
+                resultRegister,
+            );
         }
         else if (opName === "if") {
             let fixups: Array<SetInstr> = [];
