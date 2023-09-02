@@ -33,8 +33,8 @@ import {
     Context,
 } from "./compile-context";
 import {
-    primNames,
     handlePrim,
+    isPrimName,
 } from "./compile-prim";
 
 const selfQuotingSymbols = new Set(["nil", "t"]);
@@ -82,7 +82,7 @@ export function handle(
         }
         let opName = operator.name;
         let args = ast.elems.slice(1);
-        if (primNames.includes(opName)) {
+        if (isPrimName(opName)) {
             return handlePrim(
                 opName,
                 args,

@@ -14,7 +14,13 @@ import {
     Context,
 } from "./compile-context";
 
-export const primNames = ["id", "type", "car", "cdr"];
+const primNames = ["id", "type", "car", "cdr"];
+
+type PrimName = "id" | "type" | "car" | "cdr";
+
+export function isPrimName(s: string): s is PrimName {
+    return primNames.includes(s);
+}
 
 const selfQuotingSymbols = new Set(["nil", "t"]);
 
@@ -29,7 +35,7 @@ function qSym(ast: Ast): string | null {
 }
 
 export function handlePrim(
-    opName: string,
+    opName: PrimName,
     args: Array<Ast>,
     ctx: Context,
     resultRegister: Register | null = null,
@@ -97,7 +103,8 @@ export function handlePrim(
         return targetReg;
     }
     else {
-        throw new Error(`Unknown prim operator name '${opName}'`);
+        let _coverageCheck: never = opName;
+        return _coverageCheck;
     }
 }
 
