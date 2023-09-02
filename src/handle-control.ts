@@ -64,14 +64,10 @@ export function handleControl(
             );
             if (rConsequent !== null) {
                 let lastInstr = ctx.instrs[ctx.instrs.length - 1];
-                if (!isSetInstr(lastInstr)) {
-                    throw new Error(
-                        "Not a set instr: " +
-                        lastInstr.constructor.name
-                    );
+                if (isSetInstr(lastInstr)) {
+                    fixups.push(lastInstr);
+                    ctx.instrs.push(new InstrJmp(ifEndLabel));
                 }
-                fixups.push(lastInstr);
-                ctx.instrs.push(new InstrJmp(ifEndLabel));
             }
             ctx.labelMap.set(branchLabel, ctx.instrs.length);
         }
@@ -85,13 +81,9 @@ export function handleControl(
             );
             if (rConsequent !== null) {
                 let lastInstr = ctx.instrs[ctx.instrs.length - 1];
-                if (!isSetInstr(lastInstr)) {
-                    throw new Error(
-                        "Not a set instr: " +
-                        lastInstr.constructor.name
-                    );
+                if (isSetInstr(lastInstr)) {
+                    fixups.push(lastInstr);
                 }
-                fixups.push(lastInstr);
             }
         }
         ctx.labelMap.set(ifEndLabel, ctx.instrs.length);

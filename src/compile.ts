@@ -10,6 +10,7 @@ import {
 import {
     InstrSetGetGlobal,
     InstrSetGetSymbol,
+    InstrSetReg,
     InstrReturnReg,
     isSetInstr,
     Register,
@@ -58,7 +59,12 @@ function handlePossiblyTail(
             return symbolReg;
         }
         else if (ctx.registerMap.has(name)) {
-            return ctx.registerMap.get(name)!;
+            let localReg = ctx.registerMap.get(name)!;
+            if (resultRegister !== null) {
+                ctx.instrs.push(new InstrSetReg(resultRegister, localReg));
+                return resultRegister;
+            }
+            return localReg;
         }
         else if (ctx.env.has(name)) {
             let globalReg = resultRegOrNextReg();

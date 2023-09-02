@@ -13,6 +13,7 @@ import {
     InstrSetPrimCdrReg,
     InstrSetPrimIdRegSym,
     InstrSetPrimTypeReg,
+    InstrSetReg,
     Target,
 } from "./target";
 
@@ -34,6 +35,7 @@ let parsers: Array<[string, Function | "LABEL"]> = [
     [",reg ← (apply ,reg)", InstrSetApply],
     [",reg ← (get-global ,str)", InstrSetGetGlobal],
     [",reg ← (get-symbol ,str)", InstrSetGetSymbol],
+    [",reg ← ,reg", InstrSetReg],
     [",lab", "LABEL"],
 ];
 

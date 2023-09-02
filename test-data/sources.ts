@@ -23,6 +23,13 @@ let sources = new Map<string, Source>([
               (f (car xs)) (all f (cdr xs))
                            nil))
     `)],
+
+    ["some", source(`
+        (def some (f xs)
+          (if (no xs)      nil
+              (f (car xs)) xs
+                           (some f (cdr xs))))
+    `)],
 ]);
 
 export default sources;

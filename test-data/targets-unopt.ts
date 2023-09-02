@@ -54,6 +54,37 @@ let expectedTargets = new Map<string, Target>([
           :if-end-1
             return %8
     `)],
+
+    ["some", parse(`
+        bcfn some [req: %0..%1; reg: %0..%8]
+            %2 ← (get-global "no")
+            (args-start)
+              (arg-one %1)
+            (args-end)
+            %3 ← (apply %2)
+            jmp :if-branch-1 unless %3
+            %8 ← (get-symbol "nil")
+            jmp :if-end-1
+          :if-branch-1
+            %4 ← (car %1)
+            (args-start)
+              (arg-one %4)
+            (args-end)
+            %5 ← (apply %0)
+            jmp :if-branch-2 unless %5
+            %8 ← %1
+            jmp :if-end-1
+         :if-branch-2
+            %6 ← (cdr %1)
+            %7 ← (get-global "some")
+            (args-start)
+              (arg-one %0)
+              (arg-one %6)
+            (args-end)
+            %8 ← (apply %7)
+         :if-end-1
+            return %8
+    `)],
 ]);
 
 export default expectedTargets;

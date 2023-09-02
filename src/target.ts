@@ -17,6 +17,7 @@ export type Instr =
     InstrSetPrimCdrReg |
     InstrSetPrimIdRegSym |
     InstrSetPrimTypeReg |
+    InstrSetReg |
     InstrReturnReg |
     InstrJmpUnlessReg;
 
@@ -27,7 +28,8 @@ export type SetInstr =
     InstrSetPrimCarReg |
     InstrSetPrimCdrReg |
     InstrSetPrimIdRegSym |
-    InstrSetPrimTypeReg;
+    InstrSetPrimTypeReg |
+    InstrSetReg;
 
 export class InstrSetPrimCarReg {
     constructor(public targetReg: Register, public objectReg: Register) {
@@ -50,6 +52,11 @@ export class InstrSetPrimIdRegSym {
 
 export class InstrSetPrimTypeReg {
     constructor(public targetReg: Register, public objectReg: Register) {
+    }
+}
+
+export class InstrSetReg {
+    constructor(public targetReg: Register, public sourceReg: Register) {
     }
 }
 
@@ -116,9 +123,9 @@ function dump(
     instructions: Array<Instr>,
     labels: Map<string, number>,
 ): string {
-    function set(targetReg: Register, rest: string): string {
+    function set(instr: SetInstr, rest: string): string {
         let leftArrow = String.fromCodePoint(8592);
-        return `%${targetReg} ${leftArrow} ${rest}`;
+        return `%${instr.targetReg} ${leftArrow} ${rest}`;
     }
 
     let lines: Array<string> = [];
@@ -133,18 +140,21 @@ function dump(
         let line: string;
         if (instr instanceof InstrSetPrimIdRegSym) {
             line = set(
-                instr.targetReg,
+                instr,
                 `(id %${instr.leftReg} ${instr.rightSym})`,
             );
         }
         else if (instr instanceof InstrSetPrimTypeReg) {
-            line = set(instr.targetReg, `(type %${instr.objectReg})`);
+            line = set(instr, `(type %${instr.objectReg})`);
         }
         else if (instr instanceof InstrSetPrimCarReg) {
-            line = set(instr.targetReg, `(car %${instr.objectReg})`);
+            line = set(instr, `(car %${instr.objectReg})`);
         }
         else if (instr instanceof InstrSetPrimCdrReg) {
-            line = set(instr.targetReg, `(cdr %${instr.objectReg})`);
+            line = set(instr, `(cdr %${instr.objectReg})`);
+        }
+        else if (instr instanceof InstrSetReg) {
+            line = set(instr, `%${instr.sourceReg}`);
         }
         else if (instr instanceof InstrArgsStart) {
             line = "(args-start)";
@@ -156,13 +166,13 @@ function dump(
             line = "(args-end)";
         }
         else if (instr instanceof InstrSetApply) {
-            line = set(instr.targetReg, `(apply %${instr.funcReg})`);
+            line = set(instr, `(apply %${instr.funcReg})`);
         }
         else if (instr instanceof InstrSetGetGlobal) {
-            line = set(instr.targetReg, `(get-global "${instr.name}")`);
+            line = set(instr, `(get-global "${instr.name}")`);
         }
         else if (instr instanceof InstrSetGetSymbol) {
-            line = set(instr.targetReg, `(get-symbol "${instr.name}")`);
+            line = set(instr, `(get-symbol "${instr.name}")`);
         }
         else if (instr instanceof InstrReturnReg) {
             line = `return %${instr.returnReg}`;

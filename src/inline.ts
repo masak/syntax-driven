@@ -12,6 +12,7 @@ import {
     InstrSetPrimCdrReg,
     InstrSetPrimIdRegSym,
     InstrSetPrimTypeReg,
+    InstrSetReg,
     InstrReturnReg,
     Register,
     Target,
@@ -79,6 +80,13 @@ export function inline(
             instrs.push(new InstrSetPrimCdrReg(
                 registerMap.get(instr.targetReg)!,
                 registerMap.get(instr.objectReg)!,
+            ));
+        }
+        else if (instr instanceof InstrSetReg) {
+            registerMap.set(instr.targetReg, unusedReg++);
+            instrs.push(new InstrSetReg(
+                registerMap.get(instr.targetReg)!,
+                registerMap.get(instr.sourceReg)!,
             ));
         }
         else if (instr instanceof InstrArgsStart) {

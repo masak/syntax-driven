@@ -15,6 +15,7 @@ import {
     InstrSetPrimCdrReg,
     InstrSetPrimIdRegSym,
     InstrSetPrimTypeReg,
+    InstrSetReg,
     InstrReturnReg,
     Target,
 } from "./target";
@@ -32,6 +33,7 @@ export const OPCODE_SET_APPLY = 0x19;
 
 export const OPCODE_SET_GLOBAL = 0x20;
 export const OPCODE_SET_SYMBOL = 0x21;
+export const OPCODE_SET_REG = 0x22;
 
 export const OPCODE_JMP = 0x30;
 export const OPCODE_UNLESS_JMP = 0x31;
@@ -209,6 +211,14 @@ class Writer {
                 OPCODE_SET_PRIM_CDR_REG,
                 instr.targetReg,
                 instr.objectReg,
+                0,
+            );
+        }
+        else if (instr instanceof InstrSetReg) {
+            this.write4Bytes(
+                OPCODE_SET_REG,
+                instr.targetReg,
+                instr.sourceReg,
                 0,
             );
         }
