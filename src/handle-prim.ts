@@ -44,7 +44,7 @@ export function handlePrim(
         ctx: Context,
         isTailContext: boolean,
         resultRegister?: Register | null,
-    ) => Register | null,
+    ) => Register,
 ): Register {
 
     function resultRegOrNextReg() {
@@ -62,9 +62,6 @@ export function handlePrim(
         let r2Sym = qSym(r2);
         if (!qSym(r1) && r2Sym !== null) {
             let r1r = handle(r1, ctx, false);
-            if (r1r === null) {
-                throw new Error("Precondition failed: null r1r reg");
-            }
             let targetReg = resultRegOrNextReg();
             ctx.instrs.push(
                 new InstrSetPrimIdRegSym(targetReg, r1r, r2Sym)
@@ -81,9 +78,6 @@ export function handlePrim(
         }
         let r1 = args[0];
         let r1r = handle(r1, ctx, false);
-        if (r1r === null) {
-            throw new Error("Precondition failed: null r1r reg");
-        }
         let targetReg = resultRegOrNextReg();
         ctx.instrs.push(new InstrSetPrimTypeReg(targetReg, r1r));
         return targetReg;
@@ -94,9 +88,6 @@ export function handlePrim(
         }
         let r1 = args[0];
         let r1r = handle(r1, ctx, false);
-        if (r1r === null) {
-            throw new Error("Precondition failed: null r1r reg");
-        }
         let targetReg = resultRegOrNextReg();
         ctx.instrs.push(new InstrSetPrimCarReg(targetReg, r1r));
         return targetReg;
@@ -107,9 +98,6 @@ export function handlePrim(
         }
         let r1 = args[0];
         let r1r = handle(r1, ctx, false);
-        if (r1r === null) {
-            throw new Error("Precondition failed: null r1r reg");
-        }
         let targetReg = resultRegOrNextReg();
         ctx.instrs.push(new InstrSetPrimCdrReg(targetReg, r1r));
         return targetReg;

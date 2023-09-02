@@ -41,7 +41,7 @@ import {
 
 const selfQuotingSymbols = new Set(["nil", "t"]);
 
-export function handle(
+function handlePossiblyTail(
     ast: Ast,
     ctx: Context,
     isTailContext: boolean,
@@ -98,6 +98,7 @@ export function handle(
                 isTailContext,
                 resultRegister,
                 handle,
+                handlePossiblyTail,
             );
         }
         else if (ctx.registerMap.has(opName)) {
@@ -105,9 +106,6 @@ export function handle(
             let argRegs = args.map((a) => handle(a, ctx, false));
             ctx.instrs.push(new InstrArgsStart());
             for (let reg of argRegs) {
-                if (reg === null) {
-                    throw new Error("Precondition failed: null arg reg");
-                }
                 ctx.instrs.push(new InstrArgOne(reg));
             }
             ctx.instrs.push(new InstrArgsEnd());
@@ -120,9 +118,6 @@ export function handle(
             if (ctx.env.has(opName) && ctx.conf.inlineKnownCalls) {
                 let argRegs = args.map((a) => {
                     let reg = handle(a, ctx, false);
-                    if (reg === null) {
-                        throw new Error("Precondition failed: null arg reg");
-                    }
                     return reg;
                 });
                 targetReg = inline(
@@ -175,9 +170,6 @@ export function handle(
                 ctx.instrs.push(new InstrSetGetGlobal(funcReg, opName));
                 ctx.instrs.push(new InstrArgsStart());
                 for (let reg of argRegs) {
-                    if (reg === null) {
-                        throw new Error("Precondition failed: null arg reg");
-                    }
                     ctx.instrs.push(new InstrArgOne(reg));
                 }
                 ctx.instrs.push(new InstrArgsEnd());
@@ -193,6 +185,19 @@ export function handle(
     else {
         throw new Error(`Unrecognized AST type ${ast.constructor.name}`);
     }
+}
+
+export function handle(
+    ast: Ast,
+    ctx: Context,
+    isTailContext: boolean,
+    resultRegister: Register | null = null,
+): Register {
+    let register = handlePossiblyTail(ast, ctx, isTailContext, resultRegister);
+    if (register === null) {
+        throw new Error("Precondition failed: null register");
+    }
+    return register;
 }
 
 export function compile(
@@ -226,7 +231,7 @@ export function compile(
     let statementIndex = 0;
     for (let statement of source.body) {
         let isTailContext = statementIndex === source.body.length - 1;
-        returnReg = handle(statement, ctx, isTailContext);
+        returnReg = handlePossiblyTail(statement, ctx, isTailContext);
         if (returnReg === null) {
             break;
         }

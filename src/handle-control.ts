@@ -33,6 +33,12 @@ export function handleControl(
         ctx: Context,
         isTailContext: boolean,
         resultRegister?: Register | null,
+    ) => Register,
+    handlePossiblyTail: (
+        ast: Ast,
+        ctx: Context,
+        isTailContext: boolean,
+        resultRegister?: Register | null,
     ) => Register | null,
 ): Register {
 
@@ -48,13 +54,10 @@ export function handleControl(
         for (let i = 0; i < args.length - 1; i += 2) {
             let test = args[i];
             let rTest = handle(test, ctx, false);
-            if (rTest === null) {
-                throw new Error("Precondition failed: null rTest reg");
-            }
             let branchLabel = ctx.nextAvailableLabel("if-branch");
             ctx.instrs.push(new InstrJmpUnlessReg(branchLabel, rTest));
             let consequent = args[i + 1];
-            let rConsequent = handle(
+            let rConsequent = handlePossiblyTail(
                 consequent,
                 ctx,
                 isTailContext,
@@ -75,7 +78,7 @@ export function handleControl(
         }
         if (args.length % 2 !== 0) {
             let consequent = args[args.length - 1];
-            let rConsequent = handle(
+            let rConsequent = handlePossiblyTail(
                 consequent,
                 ctx,
                 isTailContext,
