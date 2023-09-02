@@ -34,7 +34,6 @@ export function handleCall(
     handle: (
         ast: Ast,
         ctx: Context,
-        isTailContext: boolean,
         resultRegister?: Register | null,
     ) => Register,
 ): Register | null {
@@ -47,7 +46,7 @@ export function handleCall(
 
     if (ctx.registerMap.has(opName)) {
         let funcReg = ctx.registerMap.get(opName)!;
-        let argRegs = args.map((a) => handle(a, ctx, false));
+        let argRegs = args.map((a) => handle(a, ctx));
         ctx.instrs.push(new InstrArgsStart());
         for (let reg of argRegs) {
             ctx.instrs.push(new InstrArgOne(reg));
@@ -61,7 +60,7 @@ export function handleCall(
         let targetReg: Register | null;
         if (ctx.env.has(opName) && ctx.conf.inlineKnownCalls) {
             let argRegs = args.map((a) => {
-                let reg = handle(a, ctx, false);
+                let reg = handle(a, ctx);
                 return reg;
             });
             targetReg = inline(
@@ -96,7 +95,7 @@ export function handleCall(
                     }
                     else {
                         let paramReg = ctx.registerMap.get(param.name)!;
-                        handle(arg, ctx, false, paramReg);
+                        handle(arg, ctx, paramReg);
                     }
                     index += 1;
                 }
@@ -109,7 +108,7 @@ export function handleCall(
             targetReg = null;
         }
         else {
-            let argRegs = args.map((a) => handle(a, ctx, false));
+            let argRegs = args.map((a) => handle(a, ctx));
             let funcReg = ctx.nextReg();
             ctx.instrs.push(new InstrSetGetGlobal(funcReg, opName));
             ctx.instrs.push(new InstrArgsStart());

@@ -31,7 +31,6 @@ export function handleControl(
     handle: (
         ast: Ast,
         ctx: Context,
-        isTailContext: boolean,
         resultRegister?: Register | null,
     ) => Register,
     handlePossiblyTail: (
@@ -53,7 +52,7 @@ export function handleControl(
         let ifEndLabel = ctx.nextAvailableLabel("if-end");
         for (let i = 0; i < args.length - 1; i += 2) {
             let test = args[i];
-            let rTest = handle(test, ctx, false);
+            let rTest = handle(test, ctx);
             let branchLabel = ctx.nextAvailableLabel("if-branch");
             ctx.instrs.push(new InstrJmpUnlessReg(branchLabel, rTest));
             let consequent = args[i + 1];

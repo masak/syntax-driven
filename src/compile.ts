@@ -119,9 +119,9 @@ function handlePossiblyTail(
 export function handle(
     ast: Ast,
     ctx: Context,
-    isTailContext: boolean,
     resultRegister: Register | null = null,
 ): Register {
+    let isTailContext = false;
     let register = handlePossiblyTail(ast, ctx, isTailContext, resultRegister);
     if (register === null) {
         throw new Error("Precondition failed: null register");

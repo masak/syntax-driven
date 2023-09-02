@@ -42,7 +42,6 @@ export function handlePrim(
     handle: (
         ast: Ast,
         ctx: Context,
-        isTailContext: boolean,
         resultRegister?: Register | null,
     ) => Register,
 ): Register {
@@ -61,7 +60,7 @@ export function handlePrim(
         let r2 = args[1];
         let r2Sym = qSym(r2);
         if (!qSym(r1) && r2Sym !== null) {
-            let r1r = handle(r1, ctx, false);
+            let r1r = handle(r1, ctx);
             let targetReg = resultRegOrNextReg();
             ctx.instrs.push(
                 new InstrSetPrimIdRegSym(targetReg, r1r, r2Sym)
@@ -77,7 +76,7 @@ export function handlePrim(
             throw new Error("Not enough operands for 'type'");
         }
         let r1 = args[0];
-        let r1r = handle(r1, ctx, false);
+        let r1r = handle(r1, ctx);
         let targetReg = resultRegOrNextReg();
         ctx.instrs.push(new InstrSetPrimTypeReg(targetReg, r1r));
         return targetReg;
@@ -87,7 +86,7 @@ export function handlePrim(
             throw new Error("Not enough operands for 'car'");
         }
         let r1 = args[0];
-        let r1r = handle(r1, ctx, false);
+        let r1r = handle(r1, ctx);
         let targetReg = resultRegOrNextReg();
         ctx.instrs.push(new InstrSetPrimCarReg(targetReg, r1r));
         return targetReg;
@@ -97,7 +96,7 @@ export function handlePrim(
             throw new Error("Not enough operands for 'cdr'");
         }
         let r1 = args[0];
-        let r1r = handle(r1, ctx, false);
+        let r1r = handle(r1, ctx);
         let targetReg = resultRegOrNextReg();
         ctx.instrs.push(new InstrSetPrimCdrReg(targetReg, r1r));
         return targetReg;
