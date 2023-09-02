@@ -12,14 +12,12 @@ import {
     InstrArgOne,
     InstrArgsEnd,
     InstrJmp,
-    InstrJmpUnlessReg,
     InstrSetApply,
     InstrSetGetGlobal,
     InstrSetGetSymbol,
     InstrReturnReg,
     isSetInstr,
     Register,
-    SetInstr,
     Target,
 } from "./target";
 import {
@@ -36,18 +34,19 @@ import {
     handlePrim,
     isPrimName,
 } from "./handle-prim";
+import {
+    handleControl,
+    isControlName,
+} from "./handle-control";
 
 const selfQuotingSymbols = new Set(["nil", "t"]);
-
-const REGISTER_NOT_YET_KNOWN = -1;
-const REGISTER_NOT_USED = -2;
 
 export function handle(
     ast: Ast,
     ctx: Context,
     isTailContext: boolean,
     resultRegister: Register | null = null,
-): Register {
+): Register | null {
 
     function resultRegOrNextReg() {
         return resultRegister === null
@@ -91,66 +90,24 @@ export function handle(
                 handle,
             );
         }
-        else if (opName === "if") {
-            let fixups: Array<SetInstr> = [];
-            let ifEndLabel = ctx.nextAvailableLabel("if-end");
-            for (let i = 0; i < args.length - 1; i += 2) {
-                let test = args[i];
-                let rTest = handle(test, ctx, false);
-                let branchLabel = ctx.nextAvailableLabel("if-branch");
-                ctx.instrs.push(new InstrJmpUnlessReg(branchLabel, rTest));
-                let consequent = args[i + 1];
-                let rConsequent = handle(
-                    consequent,
-                    ctx,
-                    isTailContext,
-                    REGISTER_NOT_YET_KNOWN,
-                );
-                if (rConsequent !== REGISTER_NOT_USED) {
-                    let lastInstr = ctx.instrs[ctx.instrs.length - 1];
-                    if (!isSetInstr(lastInstr)) {
-                        throw new Error(
-                            "Not a set instr: " +
-                            lastInstr.constructor.name
-                        );
-                    }
-                    fixups.push(lastInstr);
-                    ctx.instrs.push(new InstrJmp(ifEndLabel));
-                }
-                ctx.labelMap.set(branchLabel, ctx.instrs.length);
-            }
-            if (args.length % 2 !== 0) {
-                let consequent = args[args.length - 1];
-                let rConsequent = handle(
-                    consequent,
-                    ctx,
-                    isTailContext,
-                    REGISTER_NOT_YET_KNOWN,
-                );
-                if (rConsequent !== REGISTER_NOT_USED) {
-                    let lastInstr = ctx.instrs[ctx.instrs.length - 1];
-                    if (!isSetInstr(lastInstr)) {
-                        throw new Error(
-                            "Not a set instr: " +
-                            lastInstr.constructor.name
-                        );
-                    }
-                    fixups.push(lastInstr);
-                }
-            }
-            ctx.labelMap.set(ifEndLabel, ctx.instrs.length);
-
-            let resultRegister = resultRegOrNextReg();
-            for (let instr of fixups) {
-                instr.targetReg = resultRegister;
-            }
-            return resultRegister;
+        else if (isControlName(opName)) {
+            return handleControl(
+                opName,
+                args,
+                ctx,
+                isTailContext,
+                resultRegister,
+                handle,
+            );
         }
         else if (ctx.registerMap.has(opName)) {
             let funcReg = ctx.registerMap.get(opName)!;
             let argRegs = args.map((a) => handle(a, ctx, false));
             ctx.instrs.push(new InstrArgsStart());
             for (let reg of argRegs) {
+                if (reg === null) {
+                    throw new Error("Precondition failed: null arg reg");
+                }
                 ctx.instrs.push(new InstrArgOne(reg));
             }
             ctx.instrs.push(new InstrArgsEnd());
@@ -159,9 +116,15 @@ export function handle(
             return targetReg;
         }
         else if (ctx.env.has(opName) || ctx.sourceName === opName) {
-            let targetReg: Register;
+            let targetReg: Register | null;
             if (ctx.env.has(opName) && ctx.conf.inlineKnownCalls) {
-                let argRegs = args.map((a) => handle(a, ctx, false));
+                let argRegs = args.map((a) => {
+                    let reg = handle(a, ctx, false);
+                    if (reg === null) {
+                        throw new Error("Precondition failed: null arg reg");
+                    }
+                    return reg;
+                });
                 targetReg = inline(
                     ctx.env.get(opName),
                     argRegs,
@@ -204,7 +167,7 @@ export function handle(
                 }
                 ctx.labelMap.set("top", ctx.topIndex);
                 ctx.instrs.push(new InstrJmp("top"));
-                targetReg = REGISTER_NOT_USED;
+                targetReg = null;
             }
             else {
                 let argRegs = args.map((a) => handle(a, ctx, false));
@@ -212,6 +175,9 @@ export function handle(
                 ctx.instrs.push(new InstrSetGetGlobal(funcReg, opName));
                 ctx.instrs.push(new InstrArgsStart());
                 for (let reg of argRegs) {
+                    if (reg === null) {
+                        throw new Error("Precondition failed: null arg reg");
+                    }
                     ctx.instrs.push(new InstrArgOne(reg));
                 }
                 ctx.instrs.push(new InstrArgsEnd());
@@ -256,16 +222,23 @@ export function compile(
     ctx.setTopIndex();
 
     // body
-    let returnReg = 0;
+    let returnReg: Register | null = 0;
     let statementIndex = 0;
     for (let statement of source.body) {
         let isTailContext = statementIndex === source.body.length - 1;
         returnReg = handle(statement, ctx, isTailContext);
+        if (returnReg === null) {
+            break;
+        }
     }
-    ctx.instrs.push(new InstrReturnReg(returnReg));
+    if (returnReg !== null) {
+        ctx.instrs.push(new InstrReturnReg(returnReg));
+    }
 
     let reqCount = maxReqReg + 1;
-    let regCount = returnReg + 1;
+    let regCount = Math.max(
+        ...ctx.instrs.filter(isSetInstr).map((i) => i.targetReg)
+    ) + 1;
 
     return new Target(
         source.name,
