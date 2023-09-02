@@ -88,6 +88,7 @@ export function handle(
                 args,
                 ctx,
                 resultRegister,
+                handle,
             );
         }
         else if (opName === "if") {

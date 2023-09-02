@@ -13,9 +13,6 @@ import {
 import {
     Context,
 } from "./compile-context";
-import {
-    handle,
-} from "./compile";
 
 export const primNames = ["id", "type", "car", "cdr"];
 
@@ -36,6 +33,12 @@ export function handlePrim(
     args: Array<Ast>,
     ctx: Context,
     resultRegister: Register | null = null,
+    handle: (
+        ast: Ast,
+        ctx: Context,
+        isTailContext: boolean,
+        resultRegister?: Register | null,
+    ) => Register,
 ): Register {
 
     function resultRegOrNextReg() {
