@@ -31,11 +31,11 @@ import {
 } from "./inline";
 import {
     Context,
-} from "./compile-context";
+} from "./context";
 import {
     handlePrim,
     isPrimName,
-} from "./compile-prim";
+} from "./handle-prim";
 
 const selfQuotingSymbols = new Set(["nil", "t"]);
 

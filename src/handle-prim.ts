@@ -12,7 +12,7 @@ import {
 } from "./target";
 import {
     Context,
-} from "./compile-context";
+} from "./context";
 
 const primNames = ["id", "type", "car", "cdr"];
 
