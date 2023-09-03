@@ -85,6 +85,35 @@ let expectedTargets = new Map<string, Target>([
          :if-end-1
             return %8
     `)],
+
+    ["reduce", parse(`
+        bcfn reduce [req: %0..%1; reg: %0..%9]
+            %2 ← (cdr %1)
+            %3 ← (get-global "no")
+            (args-start)
+              (arg-one %2)
+            (args-end)
+            %4 ← (apply %3)
+            jmp :if-branch-1 unless %4
+            %9 ← (car %1)
+            jmp :if-end-1
+         :if-branch-1
+            %5 ← (car %1)
+            %6 ← (cdr %1)
+            %7 ← (get-global "reduce")
+            (args-start)
+              (arg-one %0)
+              (arg-one %6)
+            (args-end)
+            %8 ← (apply %7)
+            (args-start)
+              (arg-one %5)
+              (arg-one %8)
+            (args-end)
+            %9 ← (apply %0)
+         :if-end-1
+            return %9
+    `)],
 ]);
 
 export default expectedTargets;

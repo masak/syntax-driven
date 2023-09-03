@@ -74,3 +74,31 @@ test("compiling 'some' (opt)", (t) => {
     t.deepEqual(actualTarget, expectedTarget);
 });
 
+test("compiling 'reduce' (unopt)", (t) => {
+    let source = sources.get("reduce")!;
+    t.not(source, undefined);
+
+    let target = targetsUnopt.get("reduce")!;
+    t.not(target, undefined);
+
+    let expectedTarget = stringifyTarget(target);
+    let actualTarget =
+        stringifyTarget(compile(source, envAfterAtom, OPT_NONE));
+
+    t.deepEqual(actualTarget, expectedTarget);
+});
+
+test("compiling 'reduce' (opt)", (t) => {
+    let source = sources.get("reduce")!;
+    t.not(source, undefined);
+
+    let target = targetsOpt.get("reduce")!;
+    t.not(target, undefined);
+
+    let expectedTarget = stringifyTarget(target);
+    let actualTarget =
+        stringifyTarget(compile(source, envAfterAtom, OPT_ALL));
+
+    t.deepEqual(actualTarget, expectedTarget);
+});
+

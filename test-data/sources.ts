@@ -30,6 +30,13 @@ let sources = new Map<string, Source>([
               (f (car xs)) xs
                            (some f (cdr xs))))
     `)],
+
+    ["reduce", source(`
+        (def reduce (f xs)
+          (if (no (cdr xs))
+              (car xs)
+              (f (car xs) (reduce f (cdr xs)))))
+    `)],
 ]);
 
 export default sources;
