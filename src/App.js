@@ -31,8 +31,8 @@ const App = (props) => (
 
       target={`
         bcfn no [req %0; reg %0..%1]
-          %1 ← (id %0 nil)
-          return %1
+            %1 ← (id %0 nil)
+            return %1
       `}
     />
 
@@ -120,11 +120,11 @@ const App = (props) => (
       `}
 
       target={`
-        bcfn atom [req %0; reg %0..%3]:
-          %1 ← (type %0)
-          %2 ← (id %1 'pair)
-          %3 ← (id %2 nil)
-          return %3
+        bcfn atom [req %0; reg %0..%3]
+            %1 ← (type %0)
+            %2 ← (id %1 'pair)
+            %3 ← (id %2 nil)
+            return %3
       `}
     />
 
@@ -181,6 +181,133 @@ const App = (props) => (
     <SourceListing fileName="source.ts" sourceText={v01.sourceTs} />
     <SourceListing fileName="target.ts" sourceText={v01.targetTs} />
     <SourceListing fileName="val.ts" sourceText={v01.valTs} />
+
+    <p>
+        with that out of the way, let's tackle { " " } <code>all</code>:
+    </p>
+
+    <Translation
+      source={`
+        (def all (f xs)
+          (if (no xs)      t
+              (f (car xs)) (all f (cdr xs))
+                           nil))
+      `}
+
+      target={`
+        bcfn all [req: %0..%1; reg: %0..%7]
+            %2 ← (id %1 nil)
+            jmp :if-branch-1 unless %2
+            %7 ← (get-symbol "t")
+            jmp :if-end-1
+          :if-branch-1
+            %3 ← (car %1)
+            (args-start)
+              (arg-one %3)
+            (args-end)
+            %4 ← (apply %0)
+            jmp :if-branch-2 unless %4
+            %5 ← (cdr %1)
+            %6 ← (get-global "all")
+            (args-start)
+              (arg-one %0)
+              (arg-one %5)
+            (args-end)
+            %7 ← (apply %6)
+            jmp :if-end-1
+          :if-branch-2
+            %7 ← (get-symbol "nil")
+          :if-end-1
+            return %7
+      `}
+    />
+
+    <p>
+        suddenly, the target code is quite a lot longer than the source
+        code. this shows, i dunno, either the compact power of { " " }
+        <code>if</code>, or the exacting fine-grainedness of target
+        instructions.
+    </p>
+
+    <p>
+        but i don't want to talk about that. see that recursive call?
+        as it so happens, it's a <em>tail</em>-recursive call, meaning
+        that this call is the last thing that happens in this function.
+    </p>
+
+    <p>
+        this also means we can perform a tail-recursion elimination.
+        the recursive call turns into a jump. in fact, we can do it on the
+        fly, and just generate the target code directly with the
+        recursive call eliminated:
+    </p>
+
+    <Translation
+      source={`
+        (def all (f xs)
+          (if (no xs)      t
+              (f (car xs)) (all f (cdr xs))
+                           nil))
+      `}
+
+      target={`
+        bcfn all [req: %0..%1; reg: %0..%5]
+          :top
+            %2 ← (id %1 nil)
+            jmp :if-branch-1 unless %2
+            %5 ← (get-symbol "t")
+            jmp :if-end-1
+          :if-branch-1
+            %3 ← (car %1)
+            (args-start)
+              (arg-one %3)
+            (args-end)
+            %4 ← (apply %0)
+            jmp :if-branch-2 unless %4
+            %1 ← (cdr %1)
+            jmp :top
+          :if-branch-2
+            %5 ← (get-symbol "nil")
+          :if-end-1
+            return %5
+      `}
+    />
+
+    <p>
+        much better. the same trick works on { " " } <code>some</code>
+    </p>
+
+    <Translation
+      source={`
+        (def some (f xs)
+          (if (no xs)      nil
+              (f (car xs)) xs
+                           (some f (cdr xs))))
+      `}
+
+      target={`
+        bcfn some [req: %0..%1; reg: %0..%5]
+          :top
+            %2 ← (id %1 nil)
+            jmp :if-branch-1 unless %2
+            %5 ← (get-symbol "nil")
+            jmp :if-end-1
+          :if-branch-1
+            %3 ← (car %1)
+            (args-start)
+              (arg-one %3)
+            (args-end)
+            %4 ← (apply %0)
+            jmp :if-branch-2 unless %4
+            %5 ← %1
+            jmp :if-end-1
+         :if-branch-2
+            %1 ← (cdr %1)
+            jmp :top
+         :if-end-1
+            return %5
+      `}
+    />
   </main>
 );
 
