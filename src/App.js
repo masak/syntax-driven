@@ -274,7 +274,7 @@ const App = (props) => (
     />
 
     <p>
-        much better. the same trick works on { " " } <code>some</code>
+        the same trick works on { " " } <code>some</code>:
     </p>
 
     <Translation
