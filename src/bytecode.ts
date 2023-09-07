@@ -22,9 +22,10 @@ import {
 
 export const OPCODE_SET_PRIM_ID_REG_SYM = 0x00;
 export const OPCODE_SET_PRIM_ID_REG_NIL = 0x01;
-export const OPCODE_SET_PRIM_TYPE_REG = 0x02;
-export const OPCODE_SET_PRIM_CAR_REG = 0x03;
-export const OPCODE_SET_PRIM_CDR_REG = 0x04;
+export const OPCODE_SET_PRIM_ID_REG_T = 0x02;
+export const OPCODE_SET_PRIM_TYPE_REG = 0x03;
+export const OPCODE_SET_PRIM_CAR_REG = 0x04;
+export const OPCODE_SET_PRIM_CDR_REG = 0x05;
 
 export const OPCODE_ARGS_START = 0x10;
 export const OPCODE_ARG_ONE = 0x11;
@@ -34,6 +35,8 @@ export const OPCODE_SET_APPLY = 0x19;
 export const OPCODE_SET_GLOBAL = 0x20;
 export const OPCODE_SET_SYMBOL = 0x21;
 export const OPCODE_SET_REG = 0x22;
+export const OPCODE_SET_NIL = 0x23;
+export const OPCODE_SET_T = 0x24;
 
 export const OPCODE_JMP = 0x30;
 export const OPCODE_UNLESS_JMP = 0x31;
@@ -170,6 +173,14 @@ class Writer {
                     0,
                 );
             }
+            else if (instr.rightSym === "t") {
+                this.write4Bytes(
+                    OPCODE_SET_PRIM_ID_REG_T,
+                    instr.targetReg,
+                    instr.leftReg,
+                    0,
+                );
+            }
             else {
                 let symPos = this.strings.get(instr.rightSym);
                 if (symPos === undefined) {
@@ -270,21 +281,39 @@ class Writer {
             );
         }
         else if (instr instanceof InstrSetGetSymbol) {
-            let symPos = this.strings.get(instr.name);
-            if (symPos === undefined) {
-                throw new Error(
-                    "Precondition broken: string " +
-                    `'${instr.name}' was not stored`
+            if (instr.name === "nil") {
+                this.write4Bytes(
+                    OPCODE_SET_NIL,
+                    instr.targetReg,
+                    0,
+                    0,
                 );
             }
-            let symPosHighByte = Math.floor(symPos / 0x100);
-            let symPosLowByte = symPos % 0x100;
-            this.write4Bytes(
-                OPCODE_SET_SYMBOL,
-                instr.targetReg,
-                symPosHighByte,
-                symPosLowByte,
-            );
+            else if (instr.name === "t") {
+                this.write4Bytes(
+                    OPCODE_SET_T,
+                    instr.targetReg,
+                    0,
+                    0,
+                );
+            }
+            else {
+                let symPos = this.strings.get(instr.name);
+                if (symPos === undefined) {
+                    throw new Error(
+                        "Precondition broken: string " +
+                        `'${instr.name}' was not stored`
+                    );
+                }
+                let symPosHighByte = Math.floor(symPos / 0x100);
+                let symPosLowByte = symPos % 0x100;
+                this.write4Bytes(
+                    OPCODE_SET_SYMBOL,
+                    instr.targetReg,
+                    symPosHighByte,
+                    symPosLowByte,
+                );
+            }
         }
         else if (instr instanceof InstrReturnReg) {
             this.write4Bytes(
@@ -295,26 +324,26 @@ class Writer {
             );
         }
         else if (instr instanceof InstrJmp) {
-            let label = labels.get(instr.label);
-            if (label === undefined) {
+            let jumpIp = labels.get(instr.label);
+            if (jumpIp === undefined) {
                 throw new Error(`Label '${instr.label} not found`);
             }
             this.write4Bytes(
                 OPCODE_JMP,
                 0,
-                label,
+                jumpIp,
                 0,
             );
         }
         else if (instr instanceof InstrJmpUnlessReg) {
-            let label = labels.get(instr.label);
-            if (label === undefined) {
+            let jumpIp = labels.get(instr.label);
+            if (jumpIp === undefined) {
                 throw new Error(`Label '${instr.label} not found`);
             }
             this.write4Bytes(
                 OPCODE_UNLESS_JMP,
                 instr.testReg,
-                label,
+                jumpIp,
                 0,
             );
         }

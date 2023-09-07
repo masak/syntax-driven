@@ -3,12 +3,20 @@ import {
     OPCODE_ARGS_END,
     OPCODE_ARGS_START,
     OPCODE_ARG_ONE,
+    OPCODE_JMP,
     OPCODE_RETURN_REG,
     OPCODE_SET_APPLY,
     OPCODE_SET_GLOBAL,
+    OPCODE_SET_PRIM_CAR_REG,
+    OPCODE_SET_PRIM_CDR_REG,
     OPCODE_SET_PRIM_ID_REG_NIL,
     OPCODE_SET_PRIM_ID_REG_SYM,
+    OPCODE_SET_PRIM_ID_REG_T,
     OPCODE_SET_PRIM_TYPE_REG,
+    OPCODE_SET_NIL,
+    OPCODE_SET_REG,
+    OPCODE_SET_T,
+    OPCODE_UNLESS_JMP,
 } from "./bytecode";
 import {
     symbol,
@@ -23,7 +31,8 @@ import {
 
 type Reaction =
     ReactionNext |
-    ReactionReturn;
+    ReactionReturn |
+    ReactionJump;
 
 class ReactionNext {
 }
@@ -32,6 +41,11 @@ const NEXT = new ReactionNext();
 
 class ReactionReturn {
     constructor(public val: Val) {
+    }
+}
+
+class ReactionJump {
+    constructor(public targetIp: number) {
     }
 }
 
@@ -74,6 +88,52 @@ export class BcRuntime {
             }
             return NEXT;
         }
+        else if (opcode === OPCODE_SET_PRIM_ID_REG_T) {
+            let targetReg = instr[1];
+            let leftReg = instr[2];
+            let leftValue = registers[leftReg];
+            if (leftValue instanceof ValSymbol) {
+                registers[targetReg] = leftValue.name === "t"
+                    ? SYMBOL_T
+                    : SYMBOL_NIL;
+            }
+            else {
+                registers[targetReg] = SYMBOL_NIL;
+            }
+            return NEXT;
+        }
+        else if (opcode === OPCODE_SET_PRIM_CAR_REG) {
+            let targetReg = instr[1];
+            let objectReg = instr[2];
+            let objectValue = registers[objectReg];
+            if (objectValue instanceof ValSymbol &&
+                objectValue.name === "nil") {
+                registers[targetReg] = SYMBOL_NIL;
+            }
+            else if (objectValue instanceof ValPair) {
+                registers[targetReg] = objectValue.a;
+            }
+            else {
+                throw new Error("car-on-atom");
+            }
+            return NEXT;
+        }
+        else if (opcode === OPCODE_SET_PRIM_CDR_REG) {
+            let targetReg = instr[1];
+            let objectReg = instr[2];
+            let objectValue = registers[objectReg];
+            if (objectValue instanceof ValSymbol &&
+                objectValue.name === "nil") {
+                registers[targetReg] = SYMBOL_NIL;
+            }
+            else if (objectValue instanceof ValPair) {
+                registers[targetReg] = objectValue.d;
+            }
+            else {
+                throw new Error("car-on-atom");
+            }
+            return NEXT;
+        }
         else if (opcode === OPCODE_RETURN_REG) {
             let returnReg = instr[2];
             return new ReactionReturn(registers[returnReg]);
@@ -105,6 +165,23 @@ export class BcRuntime {
             registers[targetReg] = result;
             return NEXT;
         }
+        else if (opcode === OPCODE_SET_REG) {
+            let targetReg = instr[1];
+            let sourceReg = instr[2];
+            let value = registers[sourceReg];
+            registers[targetReg] = value;
+            return NEXT;
+        }
+        else if (opcode === OPCODE_SET_NIL) {
+            let targetReg = instr[1];
+            registers[targetReg] = SYMBOL_NIL;
+            return NEXT;
+        }
+        else if (opcode === OPCODE_SET_T) {
+            let targetReg = instr[1];
+            registers[targetReg] = SYMBOL_T;
+            return NEXT;
+        }
         else if (opcode === OPCODE_ARGS_START) {
             // Well, isn't JavaScript fun. I guess we could also use
             // `splice` here, but it does seem more direct just to
@@ -134,8 +211,24 @@ export class BcRuntime {
             registers[targetReg] = retValue;
             return NEXT;
         }
+        else if (opcode === OPCODE_UNLESS_JMP) {
+            let testReg = instr[1];
+            let targetIp = instr[2];
+            let testValue = registers[testReg];
+            if (testValue instanceof ValSymbol && testValue.name === "nil") {
+                return new ReactionJump(targetIp);
+            }
+            else {
+                return NEXT;
+            }
+        }
+        else if (opcode === OPCODE_JMP) {
+            let targetIp = instr[2];
+            return new ReactionJump(targetIp);
+        }
         else {
-            throw new Error(`Unrecognized opcode ${opcode}`);
+            let hexOpcode = opcode.toString(16);
+            throw new Error(`Unrecognized opcode 0x${hexOpcode}`);
         }
     }
 
@@ -170,6 +263,9 @@ export class BcRuntime {
             }
             else if (reaction instanceof ReactionReturn) {
                 return reaction.val;
+            }
+            else if (reaction instanceof ReactionJump) {
+                ip = 4 + 4 * reaction.targetIp;
             }
             else {
                 let _coverageCheck: never = reaction;

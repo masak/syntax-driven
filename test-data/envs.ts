@@ -12,3 +12,8 @@ export const envAfterNo = emptyEnv
 export const envAfterAtom = envAfterNo
     .install(sources.get("atom")!);
 
+export const envAfterReduce = envAfterAtom
+    .install(sources.get("all")!)
+    .install(sources.get("some")!)
+    .install(sources.get("reduce")!);
+
