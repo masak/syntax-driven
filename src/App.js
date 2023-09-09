@@ -1,7 +1,8 @@
 import React from 'react';
 import './App.css';
-import Translation from './components/Translation';
+import BytecodeDump from './components/BytecodeDump';
 import SourceListing from './components/SourceListing';
+import Translation from './components/Translation';
 import * as v01 from './snapshots/v01';
 
 const App = (props) => (
@@ -166,9 +167,7 @@ const App = (props) => (
         the bytecode container:
     </p>
 
-    <p>
-        <em>&lt;some statistics here&gt;</em>
-    </p>
+    <BytecodeDump />
 
     <SourceListing fileName="bytecode.ts" sourceText={v01.bytecodeTs} />
     <SourceListing fileName="compile.ts" sourceText={v01.compileTs} />
