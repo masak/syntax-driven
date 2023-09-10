@@ -4,6 +4,9 @@ import BytecodeDump from './components/BytecodeDump';
 import SourceListing from './components/SourceListing';
 import Translation from './components/Translation';
 import * as v01 from './snapshots/v01';
+import {
+    bcDump as v01Dump,
+} from "./bc-dumps/v01";
 
 const App = (props) => (
   <main>
@@ -167,7 +170,7 @@ const App = (props) => (
         the bytecode container:
     </p>
 
-    <BytecodeDump />
+    <BytecodeDump dump={v01Dump} />
 
     <SourceListing fileName="bytecode.ts" sourceText={v01.bytecodeTs} />
     <SourceListing fileName="compile.ts" sourceText={v01.compileTs} />
