@@ -46,6 +46,10 @@ const SIZE = 1_024;
 
 const TYPE_SYM = 0x01;
 
+const internTypes = new Map<number, string>([
+    [TYPE_SYM, "symbol"],
+]);
+
 interface Deferred {
     pos: number;
     fixupName: string;
@@ -399,6 +403,73 @@ class Writer {
     }
 }
 
+type Entry =
+    HeaderEntry |
+    InternEntry |
+    StringEntry |
+    GlobalEntry |
+    BcfnEntry;
+
+interface HeaderEntry {
+    type: "header";
+    bytes: Array<number>;
+}
+
+interface InternEntry {
+    type: "intern";
+    addr: number;
+    size: number;
+    category: number;
+    categoryName: string;
+    ref: number;
+    bytes: Array<number>;
+}
+
+interface StringEntry {
+    type: "string";
+    addr: number;
+    size: number;
+    content: string;
+    bytes: Array<number>;
+}
+
+interface GlobalEntry {
+    type: "global";
+    addr: number;
+    size: number;
+    name: string;
+    ref: number;
+    bytes: Array<number>;
+}
+
+interface BcfnEntry {
+    type: "bcfn";
+    addr: number;
+    size: number;
+    name: string;
+    req: number;
+    reg: number;
+    instrCount: number;
+    bytes: Array<number>;
+}
+
+interface BcDump {
+    entries: Array<Entry>;
+    totalByteDumpSize: number;
+}
+
+function hex(n: number, padToLength = 0): string {
+    let s = n.toString(16);
+    while (s.length < padToLength) {
+        s = "0" + s;
+    }
+    return "0x" + s;
+}
+
+function roundUpToNearest4(n: number) {
+    return Math.ceil(n / 4) * 4;
+}
+
 export class Bytecode {
     bytes: Uint8Array;
 
@@ -476,6 +547,126 @@ export class Bytecode {
             pos += 4;
         }
         throw new Error(`Global '${name}' not found`);
+    }
+
+    private dumpBytes(addr: number, length: number): Array<number> {
+        let slice = [];
+        for (let offset = 0; offset < length; offset++) {
+            slice.push(this.bytes[addr + offset]);
+        }
+        return slice;
+    }
+
+    dump(): BcDump {
+        let entries: Array<Entry> = [];
+        let [b1, b2, b3, b4] = [
+            this.bytes[0],
+            this.bytes[1],
+            this.bytes[2],
+            this.bytes[3],
+        ];
+        entries.push({
+            type: "header",
+            bytes: [b1, b2, b3, b4],
+        });
+        let globalsAddr = 0x100 * b1 + b2;
+        let globalsEndAddr = 0x100 * b3 + b4;
+        let [bp3, bp4] = [
+            this.bytes[4 + 2],
+            this.bytes[4 + 3],
+        ];
+        let stringsAddr = 0x100 * bp3 + bp4;
+        let stringAddrs = new Set<number>();
+        let internMap = new Map<number, number>();
+        for (let i = 4; i < stringsAddr; i += 4) {
+            let [b1, _, b3, b4] = [
+                this.bytes[i + 0],
+                this.bytes[i + 1],
+                this.bytes[i + 2],
+                this.bytes[i + 3],
+            ];
+            let internAddr = 0x100 * b3 + b4;
+            internMap.set(i, internAddr);
+            entries.push({
+                type: "intern",
+                addr: i,
+                size: 4,
+                category: b1,
+                categoryName: internTypes.get(b1),
+                ref: internAddr,
+                bytes: this.dumpBytes(i, 4),
+            } as InternEntry);
+            stringAddrs.add(internAddr);
+        }
+        let stringMap = new Map<number, string>();
+        for (let stringAddr of stringAddrs) {
+            let length = this.bytes[stringAddr];
+            let content = [];
+            for (let i = 0; i < length; i++) {
+                let char = this.bytes[stringAddr + 1 + i];
+                content.push(String.fromCodePoint(char));
+            }
+            let s = content.join("");
+            let size = roundUpToNearest4(1 + length);
+            stringMap.set(stringAddr, s);
+            entries.push({
+                type: "string",
+                addr: stringAddr,
+                size,
+                content: s,
+                bytes: this.dumpBytes(stringAddr, size),
+            } as StringEntry);
+        }
+        let funcs = new Map<number, string>();
+        for (let i = globalsAddr; i < globalsEndAddr; i += 4) {
+            let [_, b2, b3, b4] = [
+                this.bytes[i + 0],
+                this.bytes[i + 1],
+                this.bytes[i + 2],
+                this.bytes[i + 3],
+            ];
+            let stringAddr = internMap.get(b2);
+            if (stringAddr === undefined) {
+                throw new Error(`Address ${hex(b2)} doesn't point to intern`);
+            }
+            let globalName = stringMap.get(stringAddr);
+            if (globalName === undefined) {
+                throw new Error(
+                    `Address ${hex(stringAddr)} doesn't point to string`);
+            }
+            let funcAddr = 0x100 * b3 + b4;
+            funcs.set(funcAddr, globalName);
+            entries.push({
+                type: "global",
+                addr: i,
+                size: 4,
+                name: globalName,
+                ref: funcAddr,
+                bytes: this.dumpBytes(i, 4),
+            } as GlobalEntry);
+        }
+        let totalByteDumpSize = globalsEndAddr;
+        for (let [funcAddr, name] of funcs.entries()) {
+            let [req, _, reg, instrCount] = [
+                this.bytes[funcAddr + 0],
+                this.bytes[funcAddr + 1],
+                this.bytes[funcAddr + 2],
+                this.bytes[funcAddr + 3],
+            ];
+            let size = 4 + 4 * instrCount;
+            totalByteDumpSize = funcAddr + size;
+            entries.push({
+                type: "bcfn",
+                addr: funcAddr,
+                size,
+                name,
+                req,
+                reg,
+                instrCount,
+                bytes: this.dumpBytes(funcAddr, size),
+            } as BcfnEntry);
+        }
+        return { entries, totalByteDumpSize };
     }
 }
 
