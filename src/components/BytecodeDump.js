@@ -101,7 +101,8 @@ const BytecodeDump = (props) => {
 
     return (
       <svg class="bytecode-dump"
-           width="700" height="70">
+           width="100%"
+           viewBox="0 0 700 70">
         <rect x={xOffset}
               y={yOffset}
               width={width}
