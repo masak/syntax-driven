@@ -3,12 +3,23 @@ export const bcDump = {
         {
             "type": "header",
             "bytes": [
-                0, 48, 0, 56
+                0, 44, 0, 52
             ]
         },
         {
             "type": "intern",
             "addr": 4,
+            "size": 4,
+            "category": 1,
+            "categoryName": "symbol",
+            "ref": 20,
+            "bytes": [
+                1, 0, 0, 20
+            ]
+        },
+        {
+            "type": "intern",
+            "addr": 8,
             "size": 4,
             "category": 1,
             "categoryName": "symbol",
@@ -19,24 +30,13 @@ export const bcDump = {
         },
         {
             "type": "intern",
-            "addr": 8,
+            "addr": 12,
             "size": 4,
             "category": 1,
             "categoryName": "symbol",
             "ref": 28,
             "bytes": [
                 1, 0, 0, 28
-            ]
-        },
-        {
-            "type": "intern",
-            "addr": 12,
-            "size": 4,
-            "category": 1,
-            "categoryName": "symbol",
-            "ref": 32,
-            "bytes": [
-                1, 0, 0, 32
             ]
         },
         {
@@ -45,25 +45,14 @@ export const bcDump = {
             "size": 4,
             "category": 1,
             "categoryName": "symbol",
-            "ref": 40,
+            "ref": 36,
             "bytes": [
-                1, 0, 0, 40
-            ]
-        },
-        {
-            "type": "intern",
-            "addr": 20,
-            "size": 4,
-            "category": 1,
-            "categoryName": "symbol",
-            "ref": 28,
-            "bytes": [
-                1, 0, 0, 28
+                1, 0, 0, 36
             ]
         },
         {
             "type": "string",
-            "addr": 24,
+            "addr": 20,
             "size": 4,
             "content": "no",
             "bytes": [
@@ -72,7 +61,7 @@ export const bcDump = {
         },
         {
             "type": "string",
-            "addr": 28,
+            "addr": 24,
             "size": 4,
             "content": "nil",
             "bytes": [
@@ -81,7 +70,7 @@ export const bcDump = {
         },
         {
             "type": "string",
-            "addr": 32,
+            "addr": 28,
             "size": 8,
             "content": "atom",
             "bytes": [
@@ -91,7 +80,7 @@ export const bcDump = {
         },
         {
             "type": "string",
-            "addr": 40,
+            "addr": 36,
             "size": 8,
             "content": "pair",
             "bytes": [
@@ -101,27 +90,27 @@ export const bcDump = {
         },
         {
             "type": "global",
-            "addr": 48,
+            "addr": 44,
             "size": 4,
             "name": "no",
-            "ref": 56,
+            "ref": 52,
             "bytes": [
-                0, 4, 0, 56
+                0, 4, 0, 52
             ]
         },
         {
             "type": "global",
-            "addr": 52,
+            "addr": 48,
             "size": 4,
             "name": "atom",
-            "ref": 68,
+            "ref": 64,
             "bytes": [
-                0, 12, 0, 68
+                0, 12, 0, 64
             ]
         },
         {
             "type": "bcfn",
-            "addr": 56,
+            "addr": 52,
             "size": 12,
             "name": "no",
             "req": 1,
@@ -135,7 +124,7 @@ export const bcDump = {
         },
         {
             "type": "bcfn",
-            "addr": 68,
+            "addr": 64,
             "size": 20,
             "name": "atom",
             "req": 1,
@@ -150,6 +139,6 @@ export const bcDump = {
             ]
         }
     ],
-    "totalByteDumpSize": 88
+    "totalByteDumpSize": 84
 };
 
