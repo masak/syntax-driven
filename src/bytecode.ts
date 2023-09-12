@@ -82,6 +82,9 @@ class Writer {
 
     writeStringsForFunc(func: Target): void {
         let writeString = (s: string) => {
+            if (this.strings.has(s)) {
+                return;
+            }
             this.strings.set(s, this.pos);
             this.defer4Bytes(
                 TYPE_SYM,
