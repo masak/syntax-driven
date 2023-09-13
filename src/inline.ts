@@ -5,15 +5,19 @@ import {
     InstrArgsStart,
     InstrJmp,
     InstrJmpUnlessReg,
+    InstrReturnReg,
     InstrSetApply,
     InstrSetGetGlobal,
     InstrSetGetSymbol,
+    InstrSetIsStackEmpty,
+    InstrSetMakeStack,
     InstrSetPrimCarReg,
     InstrSetPrimCdrReg,
     InstrSetPrimIdRegSym,
     InstrSetPrimTypeReg,
     InstrSetReg,
-    InstrReturnReg,
+    InstrSetStackPop,
+    InstrStackPush,
     Register,
     Target,
 } from "./target";
@@ -112,6 +116,32 @@ export function inline(
         }
         else if (instr instanceof InstrJmpUnlessReg) {
             throw new Error("Need to handle labels/jumps in 'inline'");
+        }
+        else if (instr instanceof InstrSetMakeStack) {
+            registerMap.set(instr.targetReg, unusedReg++);
+            instrs.push(new InstrSetMakeStack(
+                registerMap.get(instr.targetReg)!,
+            ));
+        }
+        else if (instr instanceof InstrSetIsStackEmpty) {
+            registerMap.set(instr.targetReg, unusedReg++);
+            instrs.push(new InstrSetIsStackEmpty(
+                registerMap.get(instr.targetReg)!,
+                registerMap.get(instr.stackReg)!,
+            ));
+        }
+        else if (instr instanceof InstrSetStackPop) {
+            registerMap.set(instr.targetReg, unusedReg++);
+            instrs.push(new InstrSetStackPop(
+                registerMap.get(instr.targetReg)!,
+                registerMap.get(instr.stackReg)!,
+            ));
+        }
+        else if (instr instanceof InstrStackPush) {
+            instrs.push(new InstrStackPush(
+                registerMap.get(instr.stackReg)!,
+                registerMap.get(instr.valueReg)!,
+            ));
         }
         else {
             let _coverageCheck: never = instr;

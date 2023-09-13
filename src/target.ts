@@ -10,26 +10,34 @@ export type Instr =
     InstrArgOne |
     InstrArgsEnd |
     InstrJmp |
+    InstrJmpUnlessReg |
+    InstrReturnReg |
     InstrSetApply |
     InstrSetGetGlobal |
     InstrSetGetSymbol |
+    InstrSetIsStackEmpty |
+    InstrSetMakeStack |
     InstrSetPrimCarReg |
     InstrSetPrimCdrReg |
     InstrSetPrimIdRegSym |
     InstrSetPrimTypeReg |
     InstrSetReg |
-    InstrReturnReg |
-    InstrJmpUnlessReg;
+    InstrSetStackPop |
+    InstrStackPush;
 
 export type SetInstr =
     InstrSetApply |
     InstrSetGetGlobal |
     InstrSetGetSymbol |
+    InstrSetIsStackEmpty |
+    InstrSetMakeStack |
     InstrSetPrimCarReg |
     InstrSetPrimCdrReg |
     InstrSetPrimIdRegSym |
     InstrSetPrimTypeReg |
-    InstrSetReg;
+    InstrSetReg |
+    InstrSetStackPop |
+    InstrSetStackPop;
 
 export class InstrSetPrimCarReg {
     constructor(public targetReg: Register, public objectReg: Register) {
@@ -102,6 +110,26 @@ export class InstrReturnReg {
 
 export class InstrJmpUnlessReg {
     constructor(public label: string, public testReg: Register) {
+    }
+}
+
+export class InstrSetMakeStack {
+    constructor(public targetReg: Register) {
+    }
+}
+
+export class InstrStackPush {
+    constructor(public stackReg: Register, public valueReg: Register) {
+    }
+}
+
+export class InstrSetIsStackEmpty {
+    constructor(public targetReg: Register, public stackReg: Register) {
+    }
+}
+
+export class InstrSetStackPop {
+    constructor(public targetReg: Register, public stackReg: Register) {
     }
 }
 
@@ -182,6 +210,18 @@ function dump(
         }
         else if (instr instanceof InstrJmpUnlessReg) {
             line = `jmp :${instr.label} unless %${instr.testReg}`;
+        }
+        else if (instr instanceof InstrSetMakeStack) {
+            line = set(instr, "(make-stack)");
+        }
+        else if (instr instanceof InstrStackPush) {
+            line = `(%${instr.stackReg}!push %${instr.valueReg})`;
+        }
+        else if (instr instanceof InstrSetIsStackEmpty) {
+            line = set(instr, `(stack-empty? %${instr.stackReg})`);
+        }
+        else if (instr instanceof InstrSetStackPop) {
+            line = set(instr, `(%${instr.stackReg}!pop)`);
         }
         else {
             let _coverageCheck: never = instr;

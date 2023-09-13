@@ -11,11 +11,15 @@ import {
     InstrSetApply,
     InstrSetGetGlobal,
     InstrSetGetSymbol,
+    InstrSetIsStackEmpty,
+    InstrSetMakeStack,
     InstrSetPrimCarReg,
     InstrSetPrimCdrReg,
     InstrSetPrimIdRegSym,
     InstrSetPrimTypeReg,
     InstrSetReg,
+    InstrSetStackPop,
+    InstrStackPush,
     InstrReturnReg,
     Target,
 } from "./target";
@@ -41,6 +45,11 @@ export const OPCODE_SET_T = 0x24;
 export const OPCODE_JMP = 0x30;
 export const OPCODE_UNLESS_JMP = 0x31;
 export const OPCODE_RETURN_REG = 0x32;
+
+export const OPCODE_SET_MAKE_STACK = 0x40;
+export const OPCODE_SET_STACK_EMPTY = 0x41;
+export const OPCODE_SET_STACK_POP = 0x42;
+export const OPCODE_STACK_PUSH = 0x43;
 
 const SIZE = 1_024;
 
@@ -351,6 +360,38 @@ class Writer {
                 OPCODE_UNLESS_JMP,
                 instr.testReg,
                 jumpIp,
+                0,
+            );
+        }
+        else if (instr instanceof InstrSetMakeStack) {
+            this.write4Bytes(
+                OPCODE_SET_MAKE_STACK,
+                instr.targetReg,
+                0,
+                0,
+            );
+        }
+        else if (instr instanceof InstrSetIsStackEmpty) {
+            this.write4Bytes(
+                OPCODE_SET_STACK_EMPTY,
+                instr.targetReg,
+                instr.stackReg,
+                0,
+            );
+        }
+        else if (instr instanceof InstrSetStackPop) {
+            this.write4Bytes(
+                OPCODE_SET_STACK_POP,
+                instr.targetReg,
+                instr.stackReg,
+                0,
+            );
+        }
+        else if (instr instanceof InstrStackPush) {
+            this.write4Bytes(
+                OPCODE_STACK_PUSH,
+                instr.stackReg,
+                instr.valueReg,
                 0,
             );
         }
