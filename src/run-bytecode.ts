@@ -4,6 +4,8 @@ import {
     OPCODE_ARGS_START,
     OPCODE_ARG_ONE,
     OPCODE_JMP,
+    OPCODE_JMP_IF,
+    OPCODE_JMP_UNLESS,
     OPCODE_RETURN_REG,
     OPCODE_SET_APPLY,
     OPCODE_SET_GLOBAL,
@@ -16,7 +18,6 @@ import {
     OPCODE_SET_NIL,
     OPCODE_SET_REG,
     OPCODE_SET_T,
-    OPCODE_UNLESS_JMP,
 } from "./bytecode";
 import {
     symbol,
@@ -211,7 +212,18 @@ export class BcRuntime {
             registers[targetReg] = retValue;
             return NEXT;
         }
-        else if (opcode === OPCODE_UNLESS_JMP) {
+        else if (opcode === OPCODE_JMP_IF) {
+            let testReg = instr[1];
+            let targetIp = instr[2];
+            let testValue = registers[testReg];
+            if (testValue instanceof ValSymbol && testValue.name !== "nil") {
+                return new ReactionJump(targetIp);
+            }
+            else {
+                return NEXT;
+            }
+        }
+        else if (opcode === OPCODE_JMP_UNLESS) {
             let testReg = instr[1];
             let targetIp = instr[2];
             let testValue = registers[testReg];

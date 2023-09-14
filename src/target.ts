@@ -10,6 +10,7 @@ export type Instr =
     InstrArgOne |
     InstrArgsEnd |
     InstrJmp |
+    InstrJmpIfReg |
     InstrJmpUnlessReg |
     InstrReturnReg |
     InstrSetApply |
@@ -105,6 +106,11 @@ export class InstrSetGetSymbol {
 
 export class InstrReturnReg {
     constructor(public returnReg: Register) {
+    }
+}
+
+export class InstrJmpIfReg {
+    constructor(public label: string, public testReg: Register) {
     }
 }
 
@@ -207,6 +213,9 @@ function dump(
         }
         else if (instr instanceof InstrJmp) {
             line = `jmp :${instr.label}`;
+        }
+        else if (instr instanceof InstrJmpIfReg) {
+            line = `jmp :${instr.label} if %${instr.testReg}`;
         }
         else if (instr instanceof InstrJmpUnlessReg) {
             line = `jmp :${instr.label} unless %${instr.testReg}`;

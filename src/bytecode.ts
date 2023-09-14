@@ -7,6 +7,7 @@ import {
     InstrArgsEnd,
     InstrArgsStart,
     InstrJmp,
+    InstrJmpIfReg,
     InstrJmpUnlessReg,
     InstrSetApply,
     InstrSetGetGlobal,
@@ -43,8 +44,9 @@ export const OPCODE_SET_NIL = 0x23;
 export const OPCODE_SET_T = 0x24;
 
 export const OPCODE_JMP = 0x30;
-export const OPCODE_UNLESS_JMP = 0x31;
-export const OPCODE_RETURN_REG = 0x32;
+export const OPCODE_JMP_IF = 0x31;
+export const OPCODE_JMP_UNLESS = 0x32;
+export const OPCODE_RETURN_REG = 0x33;
 
 export const OPCODE_SET_MAKE_STACK = 0x40;
 export const OPCODE_SET_STACK_EMPTY = 0x41;
@@ -351,13 +353,25 @@ class Writer {
                 0,
             );
         }
+        else if (instr instanceof InstrJmpIfReg) {
+            let jumpIp = labels.get(instr.label);
+            if (jumpIp === undefined) {
+                throw new Error(`Label '${instr.label} not found`);
+            }
+            this.write4Bytes(
+                OPCODE_JMP_IF,
+                instr.testReg,
+                jumpIp,
+                0,
+            );
+        }
         else if (instr instanceof InstrJmpUnlessReg) {
             let jumpIp = labels.get(instr.label);
             if (jumpIp === undefined) {
                 throw new Error(`Label '${instr.label} not found`);
             }
             this.write4Bytes(
-                OPCODE_UNLESS_JMP,
+                OPCODE_JMP_UNLESS,
                 instr.testReg,
                 jumpIp,
                 0,

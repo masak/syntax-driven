@@ -66,28 +66,32 @@ let expectedTargets = new Map<string, Target>([
     `)],
 
     ["reduce", parse(`
-        bcfn reduce [req: %0..%1; reg: %0..%8]
-            %2 ← (cdr %1)
-            %3 ← (id %2 nil)
-            jmp :if-branch-1 unless %3
-            %8 ← (car %1)
+        bcfn reduce [req: %0..%1; reg: %0..%9]
+            %2 ← (make-stack)
+         :top
+            %3 ← (cdr %1)
+            %4 ← (id %3 nil)
+            jmp :if-branch-1 unless %4
+            %9 ← (car %1)
             jmp :if-end-1
          :if-branch-1
-            %4 ← (car %1)
-            %5 ← (cdr %1)
-            %6 ← (get-global "reduce")
-            (args-start)
-              (arg-one %0)
-              (arg-one %5)
-            (args-end)
-            %7 ← (apply %6)
-            (args-start)
-              (arg-one %4)
-              (arg-one %7)
-            (args-end)
-            %8 ← (apply %0)
+            %5 ← (car %1)
+            %6 ← (cdr %1)
+            %1 ← %6
+            (%2!push %5)
+            jmp :top
          :if-end-1
-            return %8
+         :unspool
+            %5 ← (stack-empty? %2)
+            jmp :unspool-done if %5
+            %5 ← (%2!pop)
+            (args-start)
+              (arg-one %5)
+              (arg-one %9)
+            (args-end)
+            %9 ← (apply %0)
+         :unspool-done
+            return %9
     `)],
 ]);
 

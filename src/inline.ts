@@ -4,6 +4,7 @@ import {
     InstrArgsEnd,
     InstrArgsStart,
     InstrJmp,
+    InstrJmpIfReg,
     InstrJmpUnlessReg,
     InstrReturnReg,
     InstrSetApply,
@@ -114,6 +115,9 @@ export function inline(
         else if (instr instanceof InstrJmp) {
             throw new Error("Need to handle labels/jumps in 'inline'");
         }
+        else if (instr instanceof InstrJmpIfReg) {
+            throw new Error("Need to handle labels/jumps in 'inline'");
+        }
         else if (instr instanceof InstrJmpUnlessReg) {
             throw new Error("Need to handle labels/jumps in 'inline'");
         }
@@ -149,6 +153,6 @@ export function inline(
         }
     }
 
-    throw new Error("Malformed bytecode: fell off the end");
+    throw new Error(`Malformed bytecode '${callee.name}': fell off the end`);
 }
 

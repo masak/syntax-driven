@@ -24,6 +24,9 @@ import {
     Context,
 } from "./context";
 import {
+    reynolds,
+} from "./reynolds";
+import {
     handlePrim,
     isPrimName,
 } from "./handle-prim";
@@ -173,6 +176,11 @@ export function compile(
     }
     if (returnReg !== null) {
         ctx.instrs.push(new InstrReturnReg(returnReg));
+    }
+
+    if (conf.eliminateSelfCalls) {
+        [ctx.instrs, ctx.labelMap] =
+            reynolds(source.name, ctx.instrs, ctx.labelMap, maxReqReg);
     }
 
     let reqCount = maxReqReg + 1;
