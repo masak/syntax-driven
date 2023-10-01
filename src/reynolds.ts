@@ -22,6 +22,9 @@ import {
     Register,
     Target,
 } from "./target";
+import {
+    query,
+} from "./query-target";
 
 function enumerate<T>(array: Array<T>): Array<[number, T]> {
     let result: Array<[number, T]> = [];
@@ -154,7 +157,6 @@ export function reynolds(origTarget: Target): Target {
     let registersWithSelf = new Set<Register>();
     let registerWithRecursiveResult: Register = -1;
     let returnedRegister: Register = -1;
-    let recursiveCalls = 0;
     let backJumps = 0;
     let dataFlow = new Map<Register, Set<Register>>();
 
@@ -173,7 +175,6 @@ export function reynolds(origTarget: Target): Target {
         }
         else if (instr instanceof InstrSetApply) {
             if (registersWithSelf.has(instr.funcReg)) {
-                recursiveCalls += 1;
                 registerWithRecursiveResult = instr.targetReg;
             }
         }
@@ -242,6 +243,9 @@ export function reynolds(origTarget: Target): Target {
         // non-exhaustive list of instruction types
     }
 
+    let recursiveCalls = query(origTarget).count((instr) =>
+        instr instanceof InstrSetApply && registersWithSelf.has(instr.funcReg)
+    );
     if (recursiveCalls !== 1 || backJumps > 0) {
         return origTarget;
     }
