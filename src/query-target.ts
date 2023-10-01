@@ -27,6 +27,14 @@ class Query {
         return result;
     }
 
+    accumArray<T>(callback: (instr: Instr) => T): Array<T> {
+        let result: Array<T> = [];
+        for (let [instr, _] of this.instrsIps) {
+            result.push(callback(instr));
+        }
+        return result;
+    }
+
     accumOne<T>(callback: (instr: Instr) => T): T {
         let length = this.instrsIps.length;
         if (length !== 1) {

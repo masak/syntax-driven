@@ -157,8 +157,7 @@ export function reynolds(origTarget: Target): Target {
     let registersWithSelf = query(origTarget)
         .filter((instr) => instr instanceof InstrSetGetGlobal)
         .filter((instr) => (instr as InstrSetGetGlobal).name === funcName)
-        .accumSet<Register>((instr) => (instr as InstrSetGetGlobal).targetReg);
-    let returnedRegister: Register = -1;
+        .accumSet((instr) => (instr as InstrSetGetGlobal).targetReg);
     let dataFlow = new Map<Register, Set<Register>>();
 
     function addDataFlow(sourceReg: Register, targetReg: Register): void {
@@ -169,10 +168,6 @@ export function reynolds(origTarget: Target): Target {
     }
 
     for (let instr of origInstrs) {
-        if (instr instanceof InstrReturnReg) {
-            returnedRegister = instr.returnReg;
-        }
-
         if (instr instanceof InstrSetPrimCarReg) {
             addDataFlow(instr.objectReg, instr.targetReg);
         }
@@ -249,7 +244,7 @@ export function reynolds(origTarget: Target): Target {
         .filter((instr) => registersWithSelf.has(
             (instr as InstrSetApply).funcReg
         ))
-        .accumOne<Register>((instr) => (instr as InstrSetApply).targetReg);
+        .accumOne((instr) => (instr as InstrSetApply).targetReg);
 
     let straddlingRegisters = new Set<Register>();
     for (let sourceReg of dataFlow.keys()) {
@@ -283,12 +278,14 @@ export function reynolds(origTarget: Target): Target {
 
     let activelyCopying = true;
     let atRecursiveCall = false;
-    //let recursiveCallResultReg = NaN;
     let trailerHeaderLength = NaN;
     let ipMap = new Map<number, number>();
     let savedLabel = "<not yet saved>";
     let savedInstrs: Array<Instr> = [];
     let argIndex = 0;
+    let returnedRegister = query(origTarget)
+        .filter((instr) => instr instanceof InstrReturnReg)
+        .accumArray((instr) => (instr as InstrReturnReg).returnReg)[0];
 
     for (let [ip, instr] of enumerate(origInstrs)) {
         if (atRecursiveCall && instr instanceof InstrArgsStart) {
@@ -321,7 +318,6 @@ export function reynolds(origTarget: Target): Target {
                 shiftReg(straddlingRegister),
             ));
             newInstrs.push(new InstrJmp("top"));
-            //recursiveCallResultReg = instr.targetReg;
         }
 
         ipMap.set(ip, newInstrs.length);
