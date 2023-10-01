@@ -178,21 +178,18 @@ export function compile(
         ctx.instrs.push(new InstrReturnReg(returnReg));
     }
 
-    if (conf.eliminateSelfCalls) {
-        [ctx.instrs, ctx.labelMap] =
-            reynolds(source.name, ctx.instrs, ctx.labelMap, maxReqReg);
-    }
-
     let reqCount = maxReqReg + 1;
     let regCount = Math.max(
         ...ctx.instrs.filter(isSetInstr).map((i) => i.targetReg)
     ) + 1;
 
-    return new Target(
+    let target = new Target(
         source.name,
         { reqCount, regCount },
         ctx.instrs,
         ctx.labelMap,
     );
+
+    return (conf.eliminateSelfCalls && reynolds(target)) || target;
 }
 

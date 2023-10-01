@@ -20,6 +20,7 @@ import {
     InstrSetStackPop,
     InstrStackPush,
     Register,
+    Target,
 } from "./target";
 
 function enumerate<T>(array: Array<T>): Array<[number, T]> {
@@ -144,12 +145,12 @@ function shiftRegsOfInstr(instr: Instr, maxReqReg: number): Instr {
     }
 }
 
-export function reynolds(
-    funcName: string,
-    origInstrs: Array<Instr>,
-    origLabels: Map<string, number>,
-    maxReqReg: Register,
-): [Array<Instr>, Map<string, number>] {
+export function reynolds(origTarget: Target): Target {
+    let funcName = origTarget.name;
+    let origInstrs = origTarget.body;
+    let origLabels = origTarget.labels;
+    let maxReqReg = origTarget.header.reqCount - 1;
+
     let registersWithSelf = new Set<Register>();
     let registerWithRecursiveResult: Register = -1;
     let returnedRegister: Register = -1;
@@ -242,7 +243,7 @@ export function reynolds(
     }
 
     if (recursiveCalls !== 1 || backJumps > 0) {
-        return [origInstrs, origLabels];
+        return origTarget;
     }
 
     let straddlingRegisters = new Set<Register>();
@@ -262,7 +263,7 @@ export function reynolds(
     }
 
     if (straddlingRegisters.size !== 1) {
-        return [origInstrs, origLabels];
+        return origTarget;
     }
     let straddlingRegister = [...straddlingRegisters][0];
 
@@ -395,6 +396,13 @@ export function reynolds(
             trailerHeaderLength,
     );
 
-    return [newInstrs, newLabels];
+    let regCount = shiftReg(origTarget.header.regCount);
+
+    return new Target(
+        funcName,
+        { reqCount: origTarget.header.reqCount, regCount },
+        newInstrs,
+        newLabels,
+    );
 }
 
