@@ -159,7 +159,6 @@ export function reynolds(origTarget: Target): Target {
         .filter((instr) => (instr as InstrSetGetGlobal).name === funcName)
         .accumSet<Register>((instr) => (instr as InstrSetGetGlobal).targetReg);
     let returnedRegister: Register = -1;
-    let backJumps = 0;
     let dataFlow = new Map<Register, Set<Register>>();
 
     function addDataFlow(sourceReg: Register, targetReg: Register): void {
@@ -169,18 +168,8 @@ export function reynolds(origTarget: Target): Target {
         dataFlow.get(sourceReg)!.add(targetReg);
     }
 
-    for (let [ip, instr] of enumerate(origInstrs)) {
-        if (instr instanceof InstrJmp ||
-            instr instanceof InstrJmpUnlessReg) {
-            let targetIp = origLabels.get(instr.label);
-            if (targetIp === undefined) {
-                throw new Error("Precondition broken: label without ip");
-            }
-            if (targetIp < ip) {
-                backJumps += 1;
-            }
-        }
-        else if (instr instanceof InstrReturnReg) {
+    for (let instr of origInstrs) {
+        if (instr instanceof InstrReturnReg) {
             returnedRegister = instr.returnReg;
         }
 
@@ -238,6 +227,19 @@ export function reynolds(origTarget: Target): Target {
     let recursiveCalls = query(origTarget).count((instr) =>
         instr instanceof InstrSetApply && registersWithSelf.has(instr.funcReg)
     );
+    let backJumps = query(origTarget)
+        .filter((instr) => instr instanceof InstrJmp ||
+            instr instanceof InstrJmpIfReg ||
+            instr instanceof InstrJmpUnlessReg)
+        .count((instr, ip) => {
+            let targetIp = origLabels.get(
+                (instr as InstrJmp | InstrJmpIfReg | InstrJmpUnlessReg).label
+            );
+            if (targetIp === undefined) {
+                throw new Error("Precondition broken: label without ip");
+            }
+            return targetIp < ip;
+        });
     if (recursiveCalls !== 1 || backJumps > 0) {
         return origTarget;
     }
