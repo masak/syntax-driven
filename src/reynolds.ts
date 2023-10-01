@@ -246,26 +246,18 @@ export function reynolds(origTarget: Target): Target {
         // non-exhaustive list of instruction types
     }
 
-    let straddlingRegisters = new Set<Register>();
-    for (let sourceReg of dataFlow.keys()) {
-        if (sourceReg <= maxReqReg) {
-            continue;
-        }
-        if (sourceReg >= registerWithRecursiveResult) {
-            continue;
-        }
-        for (let targetReg of dataFlow.get(sourceReg)!) {
-            if (targetReg <= registerWithRecursiveResult) {
-                continue;
-            }
-            straddlingRegisters.add(sourceReg);
-        }
-    }
+    let straddlingRegisters = [...dataFlow.keys()]
+        .filter((sourceReg) =>
+            sourceReg > maxReqReg &&
+            sourceReg < registerWithRecursiveResult &&
+            [...dataFlow.get(sourceReg)!].some((targetReg) =>
+                targetReg > registerWithRecursiveResult
+            ));
 
-    if (straddlingRegisters.size !== 1) {
+    if (straddlingRegisters.length !== 1) {
         return origTarget;
     }
-    let straddlingRegister = [...straddlingRegisters][0];
+    let straddlingRegister = straddlingRegisters[0];
 
     let newInstrs: Array<Instr> = [];
     let stackReg = maxReqReg + 1;
