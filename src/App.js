@@ -363,6 +363,27 @@ const App = (props) => (
         recursions were not meant to be eliminated. but will we give
         up? of course not!
     </p>
+
+    <p>
+        we can make a more subtle and more difficult transformation.
+        with tail-call elimination, we're morally justified in making
+        the transformation by the fact that there's "nothing more to
+        do" in the function; there is no code running after the
+        recursive call, and therefore no need to return to the
+        function again before handing back the result. (it's a
+        "getting rid of the middleman", the current function, when
+        returning after the recursive call.) but what if there was
+        some code after the recursive call, and (by happy coincidence)
+        exactly one datum we need to remember in that code? we can
+        push that datum on an explicit stack, turn the recursive call
+        into a jump (just like with the tail-call elimination), and
+        then "unspool" the stack at the end of the function; that is,
+        run the required number of iterations handling the
+        post-recursive-call code based on the data pushed on the
+        stack. it's a <em>stack</em> because we handle the things
+        pushed on it in last-in-first-out order, reflecting how the
+        post-recursive-call code would run.
+    </p>
   </main>
 );
 
