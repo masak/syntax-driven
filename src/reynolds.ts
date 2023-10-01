@@ -158,6 +158,33 @@ export function reynolds(origTarget: Target): Target {
         .filter((instr) => instr instanceof InstrSetGetGlobal)
         .filter((instr) => (instr as InstrSetGetGlobal).name === funcName)
         .accumSet((instr) => (instr as InstrSetGetGlobal).targetReg);
+    let recursiveCalls = query(origTarget).count((instr) =>
+        instr instanceof InstrSetApply && registersWithSelf.has(instr.funcReg)
+    );
+    let backJumps = query(origTarget)
+        .filter((instr) => instr instanceof InstrJmp ||
+            instr instanceof InstrJmpIfReg ||
+            instr instanceof InstrJmpUnlessReg)
+        .count((instr, ip) => {
+            let targetIp = origLabels.get(
+                (instr as InstrJmp | InstrJmpIfReg | InstrJmpUnlessReg).label
+            );
+            if (targetIp === undefined) {
+                throw new Error("Precondition broken: label without ip");
+            }
+            return targetIp < ip;
+        });
+    if (recursiveCalls !== 1 || backJumps > 0) {
+        return origTarget;
+    }
+
+    let registerWithRecursiveResult = query(origTarget)
+        .filter((instr) => instr instanceof InstrSetApply)
+        .filter((instr) => registersWithSelf.has(
+            (instr as InstrSetApply).funcReg
+        ))
+        .accumOne((instr) => (instr as InstrSetApply).targetReg);
+
     let dataFlow = new Map<Register, Set<Register>>();
 
     function addDataFlow(sourceReg: Register, targetReg: Register): void {
@@ -218,33 +245,6 @@ export function reynolds(origTarget: Target): Target {
         }
         // non-exhaustive list of instruction types
     }
-
-    let recursiveCalls = query(origTarget).count((instr) =>
-        instr instanceof InstrSetApply && registersWithSelf.has(instr.funcReg)
-    );
-    let backJumps = query(origTarget)
-        .filter((instr) => instr instanceof InstrJmp ||
-            instr instanceof InstrJmpIfReg ||
-            instr instanceof InstrJmpUnlessReg)
-        .count((instr, ip) => {
-            let targetIp = origLabels.get(
-                (instr as InstrJmp | InstrJmpIfReg | InstrJmpUnlessReg).label
-            );
-            if (targetIp === undefined) {
-                throw new Error("Precondition broken: label without ip");
-            }
-            return targetIp < ip;
-        });
-    if (recursiveCalls !== 1 || backJumps > 0) {
-        return origTarget;
-    }
-
-    let registerWithRecursiveResult = query(origTarget)
-        .filter((instr) => instr instanceof InstrSetApply)
-        .filter((instr) => registersWithSelf.has(
-            (instr as InstrSetApply).funcReg
-        ))
-        .accumOne((instr) => (instr as InstrSetApply).targetReg);
 
     let straddlingRegisters = new Set<Register>();
     for (let sourceReg of dataFlow.keys()) {
