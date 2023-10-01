@@ -154,7 +154,10 @@ export function reynolds(origTarget: Target): Target {
     let origLabels = origTarget.labels;
     let maxReqReg = origTarget.header.reqCount - 1;
 
-    let registersWithSelf = new Set<Register>();
+    let registersWithSelf = query(origTarget)
+        .filter((instr) => instr instanceof InstrSetGetGlobal)
+        .filter((instr) => (instr as InstrSetGetGlobal).name === funcName)
+        .accumSet<Register>((instr) => (instr as InstrSetGetGlobal).targetReg);
     let registerWithRecursiveResult: Register = -1;
     let returnedRegister: Register = -1;
     let backJumps = 0;
@@ -168,12 +171,7 @@ export function reynolds(origTarget: Target): Target {
     }
 
     for (let [ip, instr] of enumerate(origInstrs)) {
-        if (instr instanceof InstrSetGetGlobal) {
-            if (instr.name === funcName) {
-                registersWithSelf.add(instr.targetReg);
-            }
-        }
-        else if (instr instanceof InstrSetApply) {
+        if (instr instanceof InstrSetApply) {
             if (registersWithSelf.has(instr.funcReg)) {
                 registerWithRecursiveResult = instr.targetReg;
             }
