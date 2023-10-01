@@ -22,6 +22,14 @@ class Query {
         }
         return result;
     }
+
+    accumOne<T>(callback: (instr: Instr) => T): T {
+        let length = this.instrs.length;
+        if (length !== 1) {
+            throw new Error(`Expected exactly one instr, was ${length}`);
+        }
+        return callback(this.instrs[0]);
+    }
 }
 
 export function query(target: Target): Query {

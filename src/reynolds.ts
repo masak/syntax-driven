@@ -158,7 +158,6 @@ export function reynolds(origTarget: Target): Target {
         .filter((instr) => instr instanceof InstrSetGetGlobal)
         .filter((instr) => (instr as InstrSetGetGlobal).name === funcName)
         .accumSet<Register>((instr) => (instr as InstrSetGetGlobal).targetReg);
-    let registerWithRecursiveResult: Register = -1;
     let returnedRegister: Register = -1;
     let backJumps = 0;
     let dataFlow = new Map<Register, Set<Register>>();
@@ -171,12 +170,7 @@ export function reynolds(origTarget: Target): Target {
     }
 
     for (let [ip, instr] of enumerate(origInstrs)) {
-        if (instr instanceof InstrSetApply) {
-            if (registersWithSelf.has(instr.funcReg)) {
-                registerWithRecursiveResult = instr.targetReg;
-            }
-        }
-        else if (instr instanceof InstrJmp ||
+        if (instr instanceof InstrJmp ||
             instr instanceof InstrJmpUnlessReg) {
             let targetIp = origLabels.get(instr.label);
             if (targetIp === undefined) {
@@ -247,6 +241,13 @@ export function reynolds(origTarget: Target): Target {
     if (recursiveCalls !== 1 || backJumps > 0) {
         return origTarget;
     }
+
+    let registerWithRecursiveResult = query(origTarget)
+        .filter((instr) => instr instanceof InstrSetApply)
+        .filter((instr) => registersWithSelf.has(
+            (instr as InstrSetApply).funcReg
+        ))
+        .accumOne<Register>((instr) => (instr as InstrSetApply).targetReg);
 
     let straddlingRegisters = new Set<Register>();
     for (let sourceReg of dataFlow.keys()) {
