@@ -384,6 +384,33 @@ const App = (props) => (
         pushed on it in last-in-first-out order, reflecting how the
         post-recursive-call code would run.
     </p>
+
+    <p>
+        ... here will go some more talk about this optimization ...
+    </p>
+
+    <p>
+        some dreaming about things further down the line:
+    </p>
+
+    <ul>
+        <li>
+            <strong>an interpreter</strong> so that we can do some
+            benchmarking between the compiled target code and interpreting
+            source code
+        </li>
+
+        <li>
+            <strong>partial evaluation</strong> for when we compile
+            { " " } <code>cons</code>
+        </li>
+
+        <li>
+            <strong>error reporting</strong> that knows where in the
+            source code the failure is located when it happens in the
+            { " " } <em>compiled</em> code
+        </li>
+    </ul>
   </main>
 );
 
