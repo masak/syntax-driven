@@ -1,5 +1,6 @@
 import React from 'react';
 
+import Datum from './Datum';
 import Defined from './Defined';
 import Keyword from './Keyword';
 import Parameter from './Parameter';
@@ -244,11 +245,15 @@ function parse(input) {
 }
 
 let KEYWORDS = new Set([
-    "if",
+    "apply", "if",
 ]);
 
 let DEFINEDS = new Set([
     "all", "car", "cdr", "id", "no", "reduce", "some", "type",
+]);
+
+let AUTOQUOTEDS = new Set([
+    "nil", "o", "t",
 ]);
 
 function prettySerialize(funcs) {
@@ -260,19 +265,26 @@ function prettySerialize(funcs) {
             result.push(
                 KEYWORDS.has(expr.name)
                     ? <Keyword>{expr.name}</Keyword>
-                    : DEFINEDS.has(expr.name)
-                        ? <Defined>{expr.name}</Defined>
-                        : parameters.has(expr.name)
-                            ? <Parameter>{expr.name}</Parameter>
-                            : expr.name
+                    : AUTOQUOTEDS.has(expr.name)
+                        ? <Datum>{expr.name}</Datum>
+                        : DEFINEDS.has(expr.name)
+                            ? <Defined>{expr.name}</Defined>
+                            : parameters.has(expr.name)
+                                ? <Parameter>{expr.name}</Parameter>
+                                : expr.name
             );
         }
         else if (expr instanceof Ast.Func) {
             result.push("###func###");
         }
         else if (expr instanceof Ast.Quote) {
-            result.push("'");
-            serializeExpr(expr.datum);
+            if (expr.datum instanceof Ast.Symbol) {
+                result.push(<Datum>'{expr.datum.name}</Datum>);
+            }
+            else {
+                result.push("'");
+                serializeExpr(expr.datum);
+            }
         }
         else if (expr instanceof Ast.List) {
             result.push("(");
