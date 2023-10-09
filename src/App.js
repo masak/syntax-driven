@@ -62,7 +62,6 @@ const App = (props) => (
 11 -- r1 --       add a single argument      { "\n" }
 18 -- -- --     (end of arguments)           { "\n" }
 19 tr r1 --     tr ← (apply r1 &lt;args&gt;) { "\n" }
-20 tr r1 --     tr ← r1                      { "\n" }
 30 -- r1 --     return r1</code></pre>
 
     <p>
