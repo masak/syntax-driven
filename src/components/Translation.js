@@ -281,9 +281,8 @@ function prettySerialize(funcs) {
         result.push(
           <Keyword>def</Keyword>
         );
-        result.push(` ${func.name} `);
+        result.push(` ${func.name}`);
         serializeExpr(func.params);
-        result.push("\n  ");
         for (let stmt of func.body) {
             serializeExpr(stmt);
         }
