@@ -252,7 +252,7 @@ function prettySerialize(funcs) {
         if (expr instanceof Ast.Symbol) {
             result.push(
                 KEYWORDS.has(expr.name)
-                    ? <Keyword>expr.name</Keyword>
+                    ? <Keyword>{expr.name}</Keyword>
                     : expr.name
             );
         }
