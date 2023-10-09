@@ -1,5 +1,6 @@
 import React from 'react';
 
+import Defined from './Defined';
 import Keyword from './Keyword';
 
 function stripSurroundingEmpty(s) {
@@ -245,6 +246,10 @@ let KEYWORDS = new Set([
     "if",
 ]);
 
+let DEFINEDS = new Set([
+    "all", "car", "cdr", "id", "no", "reduce", "some", "type",
+]);
+
 function prettySerialize(funcs) {
     let result = [];
     function serializeExpr(expr) {
@@ -253,7 +258,9 @@ function prettySerialize(funcs) {
             result.push(
                 KEYWORDS.has(expr.name)
                     ? <Keyword>{expr.name}</Keyword>
-                    : expr.name
+                    : DEFINEDS.has(expr.name)
+                        ? <Defined>{expr.name}</Defined>
+                        : expr.name
             );
         }
         else if (expr instanceof Ast.Func) {
@@ -289,7 +296,8 @@ function prettySerialize(funcs) {
         result.push(
           <Keyword>def</Keyword>
         );
-        result.push(` ${func.name}`);
+        result.push(" ");
+        result.push(<Defined>{func.name}</Defined>);
         serializeExpr(func.params);
         for (let stmt of func.body) {
             serializeExpr(stmt);
