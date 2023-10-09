@@ -2,6 +2,7 @@ import React from 'react';
 
 import Defined from './Defined';
 import Keyword from './Keyword';
+import Parameter from './Parameter';
 
 function stripSurroundingEmpty(s) {
     return s.replace(/^( )*\n/, "").replace(/\n( )*$/, "");
@@ -252,6 +253,7 @@ let DEFINEDS = new Set([
 
 function prettySerialize(funcs) {
     let result = [];
+    let parameters = new Set();
     function serializeExpr(expr) {
         result.push(expr.whitespace);
         if (expr instanceof Ast.Symbol) {
@@ -260,7 +262,9 @@ function prettySerialize(funcs) {
                     ? <Keyword>{expr.name}</Keyword>
                     : DEFINEDS.has(expr.name)
                         ? <Defined>{expr.name}</Defined>
-                        : expr.name
+                        : parameters.has(expr.name)
+                            ? <Parameter>{expr.name}</Parameter>
+                            : expr.name
             );
         }
         else if (expr instanceof Ast.Func) {
@@ -298,6 +302,12 @@ function prettySerialize(funcs) {
         );
         result.push(" ");
         result.push(<Defined>{func.name}</Defined>);
+        parameters = new Set();
+        for (let param of func.params.elems) {
+            if (param instanceof Ast.Symbol) {
+                parameters.add(param.name);
+            }
+        }
         serializeExpr(func.params);
         for (let stmt of func.body) {
             serializeExpr(stmt);
