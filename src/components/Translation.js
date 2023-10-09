@@ -241,7 +241,7 @@ function parse(input) {
     return funcs;
 }
 
-let KEYWORDS = new Map([
+let KEYWORDS = new Set([
     "if",
 ]);
 
