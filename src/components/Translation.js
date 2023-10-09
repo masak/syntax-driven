@@ -279,7 +279,8 @@ function prettySerialize(funcs) {
         }
         else if (expr instanceof Ast.Quote) {
             if (expr.datum instanceof Ast.Symbol) {
-                result.push(<Datum>'{expr.datum.name}</Datum>);
+                result.push("'");
+                result.push(<Datum>{expr.datum.name}</Datum>);
             }
             else {
                 result.push("'");
