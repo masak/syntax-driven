@@ -24,6 +24,9 @@ function deindent(s) {
 var Ev;
 (function (Ev) {
     class OpenParen {
+        constructor(whitespace) {
+            this.whitespace = whitespace;
+        }
     }
     Ev.OpenParen = OpenParen;
 
@@ -35,10 +38,16 @@ var Ev;
     Ev.Ast = Ast;
 
     class Dot {
+        constructor(whitespace) {
+            this.whitespace = whitespace;
+        }
     }
     Ev.Dot = Dot;
 
     class Quot {
+        constructor(whitespace) {
+            this.whitespace = whitespace;
+        }
     }
     Ev.Quot = Quot;
 })(Ev || (Ev = {}));
@@ -46,7 +55,8 @@ var Ev;
 var Ast;
 (function (Ast) {
     class Func {
-        constructor(name, params, body) {
+        constructor(whitespace, name, params, body) {
+            this.whitespace = whitespace;
             this.name = name;
             this.params = params;
             this.body = body;
@@ -55,14 +65,16 @@ var Ast;
     Ast.Func = Func;
 
     class List {
-        constructor(elems) {
+        constructor(whitespace, elems) {
+            this.whitespace = whitespace;
             this.elems = elems;
         }
     }
     Ast.List = List;
 
     class DottedList {
-        constructor(regularElems, lastElem) {
+        constructor(whitespace, regularElems, lastElem) {
+            this.whitespace = whitespace;
             this.regularElems = regularElems;
             this.lastElem = lastElem;
         }
@@ -70,14 +82,16 @@ var Ast;
     Ast.DottedList = DottedList;
 
     class Quote {
-        constructor(datum) {
+        constructor(whitespace, datum) {
+            this.whitespace = whitespace;
             this.datum = datum;
         }
     }
     Ast.Quote = Quote;
 
     class Symbol {
-        constructor(name) {
+        constructor(whitespace, name) {
+            this.whitespace = whitespace;
             this.name = name;
         }
     }
@@ -113,11 +127,11 @@ function extractElems(stack) {
             if (datum instanceof Ev.Dot) {
                 throw new Error("Can't quote a dot");
             }
-            let quote = new Ast.Quote(datum.ast);
+            let quote = new Ast.Quote(elem.whitespace, datum.ast);
             elems.unshift(new Ev.Ast(quote));
         }
         else if (elem instanceof Ev.OpenParen) {
-            return elems;
+            return [elem.whitespace, elems];
         }
         else {
             elems.unshift(elem);
@@ -152,18 +166,19 @@ function parse(input) {
     let stack = [];
     let pos = 0;
     while (pos < input.length) {
-        let whitespaceLength = WHITESPACE.exec(input.substring(pos));
-        pos += whitespaceLength[0].length;
+        let whitespaceLength = WHITESPACE.exec(input.substring(pos))[0].length;
+        let whitespace = input.substring(pos, pos + whitespaceLength);
+        pos += whitespaceLength;
         if (pos >= input.length) {
             break;
         }
         let m;
         if (input.charAt(pos) === "(") {
-            stack.push(new Ev.OpenParen());
+            stack.push(new Ev.OpenParen(whitespace));
             pos += 1;
         }
         else if (input.charAt(pos) === ")") {
-            let elems = extractElems(stack);
+            let [openParenWhitespace, elems] = extractElems(stack);
             let dotIndex = elems.findIndex((e) => e instanceof Ev.Dot);
             let list;
             if (dotIndex !== -1 && dotIndex < elems.length - 2) {
@@ -173,12 +188,12 @@ function parse(input) {
                 throw new Error("Dot too late in list");
             }
             else if (dotIndex === -1) {
-                list = new Ast.List(elems.map(toAst));
+                list = new Ast.List(openParenWhitespace, elems.map(toAst));
             }
             else { // dotIndex === elems.length - 2
                 let regularElems = elems.slice(0, dotIndex).map(toAst);
                 let lastElem = toAst(elems[elems.length - 1]);
-                list = new Ast.DottedList(regularElems, lastElem);
+                list = new Ast.DottedList(openParenWhitespace, regularElems, lastElem);
             }
             let isFunctionDefinition = elems.length > 0 &&
                 toAst(elems[0]) instanceof Ast.Symbol &&
@@ -197,7 +212,7 @@ function parse(input) {
                 if (!isParams(params)) {
                     throw new Error("Malformed funtion definition: params not a symbol or list");
                 }
-                stack.push(new Ev.Ast(new Ast.Func(funcSymbol.name, params, body)));
+                stack.push(new Ev.Ast(new Ast.Func(firstElem.whitespace, funcSymbol.name, params, body)));
             }
             else { // regular case, create a list
                 stack.push(new Ev.Ast(list));
@@ -205,16 +220,16 @@ function parse(input) {
             pos += 1;
         }
         else if (input.charAt(pos) === "'") {
-            stack.push(new Ev.Quot());
+            stack.push(new Ev.Quot(whitespace));
             pos += 1;
         }
         else if (input.charAt(pos) === ".") {
-            stack.push(new Ev.Dot());
+            stack.push(new Ev.Dot(whitespace));
             pos += 1;
         }
         else if ((m = SYMBOL.exec(input.substring(pos)))) {
             let name = m[0];
-            stack.push(new Ev.Ast(new Ast.Symbol(name)));
+            stack.push(new Ev.Ast(new Ast.Symbol(whitespace, name)));
             pos += name.length;
         }
         else {
