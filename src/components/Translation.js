@@ -241,12 +241,20 @@ function parse(input) {
     return funcs;
 }
 
+let KEYWORDS = new Map([
+    "if",
+]);
+
 function prettySerialize(funcs) {
     let result = [];
     function serializeExpr(expr) {
         result.push(expr.whitespace);
         if (expr instanceof Ast.Symbol) {
-            result.push(expr.name);
+            result.push(
+                KEYWORDS.has(expr.name)
+                    ? <Keyword>expr.name</Keyword>
+                    : expr.name
+            );
         }
         else if (expr instanceof Ast.Func) {
             result.push("###func###");
