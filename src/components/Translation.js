@@ -244,6 +244,7 @@ function parse(input) {
 function prettySerialize(funcs) {
     let result = [];
     function serializeExpr(expr) {
+        result.push(expr.whitespace);
         if (expr instanceof Ast.Symbol) {
             result.push(expr.name);
         }
@@ -256,13 +257,8 @@ function prettySerialize(funcs) {
         }
         else if (expr instanceof Ast.List) {
             result.push("(");
-            let i = 0;
             for (let elem of expr.elems) {
                 serializeExpr(elem);
-                if (i < expr.elems.length - 1) {
-                    result.push(" ");
-                }
-                ++i;
             }
             result.push(")");
         }
@@ -270,9 +266,8 @@ function prettySerialize(funcs) {
             result.push("(");
             for (let elem of expr.regularElems) {
                 serializeExpr(elem);
-                result.push(" ");
             }
-            result.push(". ");
+            result.push(".");
             serializeExpr(expr.lastElem);
             result.push(")");
         }
