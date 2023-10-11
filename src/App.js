@@ -409,6 +409,35 @@ const App = (props) => (
             source code the failure is located when it happens in the
             { " " } <em>compiled</em> code
         </li>
+
+        <li>
+            <strong>validation</strong> of both target code and bytecode
+        </li>
+
+        <li>
+            <strong>types</strong> in the target code, just the things
+            we can be absolutely sure about from the untyped source code
+        </li>
+
+        <li>
+            <strong>effects</strong> in the target code, particularly the
+            distinction between "no side effects" and "yes side effects",
+            which can really make a difference during optimization
+        </li>
+
+        <li>
+            <strong>globals dependencies</strong>, via which compiler gets
+            to inline things with abandon, but still know when those things
+            get redefined so that the dependent functions can be recompiled
+        </li>
+
+        <li>
+            <strong>hotswapping</strong> and
+            <strong>edit-and-continue</strong>, meaning you can be in a
+            session (or even stand on a breakpoint in a function), and
+            change the code, and it immediately takes effect (just like
+            in an interpreter), even though all that ever runs is bytecode
+        </li>
     </ul>
   </main>
 );
