@@ -148,7 +148,7 @@ function shiftRegsOfInstr(instr: Instr, maxReqReg: number): Instr {
     }
 }
 
-export function reynolds(origTarget: Target): Target {
+export function taba(origTarget: Target): Target {
     let funcName = origTarget.name;
     let origInstrs = origTarget.body;
     let origLabels = origTarget.labels;

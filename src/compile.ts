@@ -24,8 +24,8 @@ import {
     Context,
 } from "./context";
 import {
-    reynolds,
-} from "./reynolds";
+    taba,
+} from "./taba";
 import {
     handlePrim,
     isPrimName,
@@ -190,6 +190,6 @@ export function compile(
         ctx.labelMap,
     );
 
-    return (conf.eliminateSelfCalls && reynolds(target)) || target;
+    return (conf.eliminateSelfCalls && taba(target)) || target;
 }
 
