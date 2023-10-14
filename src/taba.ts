@@ -1,7 +1,7 @@
 import {
+    cloneInstr,
     Instr,
     InstrArgOne,
-    InstrArgsEnd,
     InstrArgsStart,
     InstrJmp,
     InstrJmpIfReg,
@@ -9,7 +9,6 @@ import {
     InstrReturnReg,
     InstrSetApply,
     InstrSetGetGlobal,
-    InstrSetGetSymbol,
     InstrSetIsStackEmpty,
     InstrSetMakeStack,
     InstrSetPrimCarReg,
@@ -41,111 +40,7 @@ function shiftRegsOfInstr(instr: Instr, maxReqReg: number): Instr {
         return reg <= maxReqReg ? reg : reg + regOffset;
     }
 
-    if (instr instanceof InstrSetPrimIdRegSym) {
-        return new InstrSetPrimIdRegSym(
-            shiftReg(instr.targetReg),
-            shiftReg(instr.leftReg),
-            instr.rightSym,
-        );
-    }
-    else if (instr instanceof InstrReturnReg) {
-        return new InstrReturnReg(shiftReg(instr.returnReg));
-    }
-    else if (instr instanceof InstrSetGetGlobal) {
-        return new InstrSetGetGlobal(
-            shiftReg(instr.targetReg),
-            instr.name,
-        );
-    }
-    else if (instr instanceof InstrSetGetSymbol) {
-        return new InstrSetGetSymbol(
-            shiftReg(instr.targetReg),
-            instr.name,
-        );
-    }
-    else if (instr instanceof InstrSetPrimTypeReg) {
-        return new InstrSetPrimTypeReg(
-            shiftReg(instr.targetReg),
-            shiftReg(instr.objectReg),
-        );
-    }
-    else if (instr instanceof InstrSetPrimCarReg) {
-        return new InstrSetPrimCarReg(
-            shiftReg(instr.targetReg),
-            shiftReg(instr.objectReg),
-        );
-    }
-    else if (instr instanceof InstrSetPrimCdrReg) {
-        return new InstrSetPrimCdrReg(
-            shiftReg(instr.targetReg),
-            shiftReg(instr.objectReg),
-        );
-    }
-    else if (instr instanceof InstrSetReg) {
-        return new InstrSetReg(
-            shiftReg(instr.targetReg),
-            shiftReg(instr.sourceReg),
-        );
-    }
-    else if (instr instanceof InstrArgsStart) {
-        return new InstrArgsStart();
-    }
-    else if (instr instanceof InstrArgOne) {
-        return new InstrArgOne(shiftReg(instr.register));
-    }
-    else if (instr instanceof InstrArgsEnd) {
-        return new InstrArgsEnd();
-    }
-    else if (instr instanceof InstrSetApply) {
-        return new InstrSetApply(
-            shiftReg(instr.targetReg),
-            shiftReg(instr.funcReg),
-        );
-    }
-    else if (instr instanceof InstrJmp) {
-        return new InstrJmp(
-            instr.label,
-        );
-    }
-    else if (instr instanceof InstrJmpIfReg) {
-        return new InstrJmpIfReg(
-            instr.label,
-            shiftReg(instr.testReg),
-        );
-    }
-    else if (instr instanceof InstrJmpUnlessReg) {
-        return new InstrJmpUnlessReg(
-            instr.label,
-            shiftReg(instr.testReg),
-        );
-    }
-    else if (instr instanceof InstrSetMakeStack) {
-        return new InstrSetMakeStack(
-            shiftReg(instr.targetReg),
-        );
-    }
-    else if (instr instanceof InstrSetIsStackEmpty) {
-        return new InstrSetIsStackEmpty(
-            shiftReg(instr.targetReg),
-            shiftReg(instr.stackReg),
-        );
-    }
-    else if (instr instanceof InstrSetStackPop) {
-        return new InstrSetStackPop(
-            shiftReg(instr.targetReg),
-            shiftReg(instr.stackReg),
-        );
-    }
-    else if (instr instanceof InstrStackPush) {
-        return new InstrStackPush(
-            shiftReg(instr.stackReg),
-            shiftReg(instr.valueReg),
-        );
-    }
-    else {
-        let _coverageCheck: never = instr;
-        return _coverageCheck;
-    }
+    return cloneInstr(instr).changeAllRegs(shiftReg);
 }
 
 export function taba(origTarget: Target): Target {

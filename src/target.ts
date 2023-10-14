@@ -40,107 +40,276 @@ export type SetInstr =
     InstrSetStackPop |
     InstrSetStackPop;
 
-export class InstrSetPrimCarReg {
+type FieldType = "in reg" | "out reg" | "label" | "sym" | "name";
+
+abstract class InstrBase {
+    changeAllRegs(fn: (reg: Register) => Register): this {
+        for (let [fieldName, type] of this.fields().entries()) {
+            if (type === "in reg" || type === "out reg") {
+                (this as any)[fieldName] = fn((this as any)[fieldName]);
+            }
+        }
+
+        return this;
+    }
+
+    abstract fields(): Map<string, FieldType>;
+}
+
+export class InstrSetPrimCarReg extends InstrBase {
     constructor(public targetReg: Register, public objectReg: Register) {
+        super();
+    }
+
+    fields() {
+        return new Map<string, FieldType>([
+            ["targetReg", "out reg"],
+            ["objectReg", "in reg"],
+        ]);
     }
 }
 
-export class InstrSetPrimCdrReg {
+export class InstrSetPrimCdrReg extends InstrBase {
     constructor(public targetReg: Register, public objectReg: Register) {
+        super();
+    }
+
+    fields() {
+        return new Map<string, FieldType>([
+            ["targetReg", "out reg"],
+            ["objectReg", "in reg"],
+        ]);
     }
 }
 
-export class InstrSetPrimIdRegSym {
+export class InstrSetPrimIdRegSym extends InstrBase {
     constructor(
         public targetReg: Register,
         public leftReg: Register,
         public rightSym: string,
     ) {
+        super();
+    }
+
+    fields() {
+        return new Map<string, FieldType>([
+            ["targetReg", "out reg"],
+            ["leftReg", "in reg"],
+            ["rightSym", "sym"],
+        ]);
     }
 }
 
-export class InstrSetPrimTypeReg {
+export class InstrSetPrimTypeReg extends InstrBase {
     constructor(public targetReg: Register, public objectReg: Register) {
+        super();
+    }
+
+    fields() {
+        return new Map<string, FieldType>([
+            ["targetReg", "out reg"],
+            ["objectReg", "in reg"],
+        ]);
     }
 }
 
-export class InstrSetReg {
+export class InstrSetReg extends InstrBase {
     constructor(public targetReg: Register, public sourceReg: Register) {
+        super();
+    }
+
+    fields() {
+        return new Map<string, FieldType>([
+            ["targetReg", "out reg"],
+            ["sourceReg", "in reg"],
+        ]);
     }
 }
 
-export class InstrArgsStart {
+export class InstrArgsStart extends InstrBase {
     constructor() {
+        super();
+    }
+
+    fields() {
+        return new Map<string, FieldType>([
+        ]);
     }
 }
 
-export class InstrArgOne {
+export class InstrArgOne extends InstrBase {
     constructor(public register: number) {
+        super();
+    }
+
+    fields() {
+        return new Map<string, FieldType>([
+            ["register", "in reg"],
+        ]);
     }
 }
 
-export class InstrArgsEnd {
+export class InstrArgsEnd extends InstrBase {
     constructor() {
+        super();
+    }
+
+    fields() {
+        return new Map<string, FieldType>([
+        ]);
     }
 }
 
-export class InstrJmp {
+export class InstrJmp extends InstrBase {
     constructor(public label: string) {
+        super();
+    }
+
+    fields() {
+        return new Map<string, FieldType>([
+            ["label", "label"],
+        ]);
     }
 }
 
-export class InstrSetApply {
+export class InstrSetApply extends InstrBase {
     constructor(public targetReg: Register, public funcReg: Register) {
+        super();
+    }
+
+    fields() {
+        return new Map<string, FieldType>([
+            ["targetReg", "out reg"],
+            ["funcReg", "in reg"],
+        ]);
     }
 }
 
-export class InstrSetGetGlobal {
+export class InstrSetGetGlobal extends InstrBase {
     constructor(public targetReg: Register, public name: string) {
+        super();
+    }
+
+    fields() {
+        return new Map<string, FieldType>([
+            ["targetReg", "out reg"],
+            ["name", "name"],
+        ]);
     }
 }
 
-export class InstrSetGetSymbol {
+export class InstrSetGetSymbol extends InstrBase {
     constructor(public targetReg: Register, public name: string) {
+        super();
+    }
+
+    fields() {
+        return new Map<string, FieldType>([
+            ["targetReg", "out reg"],
+            ["name", "sym"],
+        ]);
     }
 }
 
-export class InstrReturnReg {
+export class InstrReturnReg extends InstrBase {
     constructor(public returnReg: Register) {
+        super();
+    }
+
+    fields() {
+        return new Map<string, FieldType>([
+            ["returnReg", "out reg"],
+        ]);
     }
 }
 
-export class InstrJmpIfReg {
+export class InstrJmpIfReg extends InstrBase {
     constructor(public label: string, public testReg: Register) {
+        super();
+    }
+
+    fields() {
+        return new Map<string, FieldType>([
+            ["label", "label"],
+            ["testReg", "in reg"],
+        ]);
     }
 }
 
-export class InstrJmpUnlessReg {
+export class InstrJmpUnlessReg extends InstrBase {
     constructor(public label: string, public testReg: Register) {
+        super();
+    }
+
+    fields() {
+        return new Map<string, FieldType>([
+            ["label", "label"],
+            ["testReg", "in reg"],
+        ]);
     }
 }
 
-export class InstrSetMakeStack {
+export class InstrSetMakeStack extends InstrBase {
     constructor(public targetReg: Register) {
+        super();
+    }
+
+    fields() {
+        return new Map<string, FieldType>([
+            ["targetReg", "out reg"],
+        ]);
     }
 }
 
-export class InstrStackPush {
+export class InstrStackPush extends InstrBase {
     constructor(public stackReg: Register, public valueReg: Register) {
+        super();
+    }
+
+    fields() {
+        return new Map<string, FieldType>([
+            ["stackReg", "in reg"],
+            ["valueReg", "in reg"],
+        ]);
     }
 }
 
-export class InstrSetIsStackEmpty {
+export class InstrSetIsStackEmpty extends InstrBase {
     constructor(public targetReg: Register, public stackReg: Register) {
+        super();
+    }
+
+    fields() {
+        return new Map<string, FieldType>([
+            ["targetReg", "out reg"],
+            ["stackReg", "in reg"],
+        ]);
     }
 }
 
-export class InstrSetStackPop {
+export class InstrSetStackPop extends InstrBase {
     constructor(public targetReg: Register, public stackReg: Register) {
+        super();
+    }
+
+    fields() {
+        return new Map<string, FieldType>([
+            ["targetReg", "out reg"],
+            ["stackReg", "in reg"],
+        ]);
     }
 }
 
 export function isSetInstr(instr: Instr): instr is SetInstr {
     return instr.hasOwnProperty("targetReg");
+}
+
+export function cloneInstr<T extends Instr>(instr: T): T {
+    let clone = Object.assign(
+        Object.create(Object.getPrototypeOf(instr)),
+        instr,
+    );
+    return clone;
 }
 
 export class Target {
