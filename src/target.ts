@@ -43,6 +43,16 @@ export type SetInstr =
 type FieldType = "in reg" | "out reg" | "label" | "sym" | "name";
 
 abstract class InstrBase {
+    forEachOutReg(fn: (reg: Register) => void): this {
+        for (let [fieldName, type] of this.fields().entries()) {
+            if (type === "out reg") {
+                fn((this as any)[fieldName]);
+            }
+        }
+
+        return this;
+    }
+
     changeAllRegs(fn: (reg: Register) => Register): this {
         for (let [fieldName, type] of this.fields().entries()) {
             if (type === "in reg" || type === "out reg") {

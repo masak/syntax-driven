@@ -1,24 +1,7 @@
 import {
+    cloneInstr,
     Instr,
-    InstrArgOne,
-    InstrArgsEnd,
-    InstrArgsStart,
-    InstrJmp,
-    InstrJmpIfReg,
-    InstrJmpUnlessReg,
     InstrReturnReg,
-    InstrSetApply,
-    InstrSetGetGlobal,
-    InstrSetGetSymbol,
-    InstrSetIsStackEmpty,
-    InstrSetMakeStack,
-    InstrSetPrimCarReg,
-    InstrSetPrimCdrReg,
-    InstrSetPrimIdRegSym,
-    InstrSetPrimTypeReg,
-    InstrSetReg,
-    InstrSetStackPop,
-    InstrStackPush,
     Register,
     Target,
 } from "./target";
@@ -39,117 +22,18 @@ export function inline(
     //      below logic is required, as soon as `some` gets inlined somewhere
     //      (which we know will happen with `map`).
 
-    let calleeInstrs = callee.body;
-    for (let instr of calleeInstrs) {
-        if (instr instanceof InstrSetPrimIdRegSym) {
-            registerMap.set(instr.targetReg, unusedReg++);
-            instrs.push(new InstrSetPrimIdRegSym(
-                registerMap.get(instr.targetReg)!,
-                registerMap.get(instr.leftReg)!,
-                instr.rightSym,
-            ));
-        }
-        else if (instr instanceof InstrReturnReg) {
+    for (let instr of callee.body) {
+        if (instr instanceof InstrReturnReg) {
             return registerMap.get(instr.returnReg)!;
         }
-        else if (instr instanceof InstrSetGetGlobal) {
-            registerMap.set(instr.targetReg, unusedReg++);
-            instrs.push(new InstrSetGetGlobal(
-                registerMap.get(instr.targetReg)!,
-                instr.name,
-            ));
-        }
-        else if (instr instanceof InstrSetGetSymbol) {
-            registerMap.set(instr.targetReg, unusedReg++);
-            instrs.push(new InstrSetGetSymbol(
-                registerMap.get(instr.targetReg)!,
-                instr.name,
-            ));
-        }
-        else if (instr instanceof InstrSetPrimTypeReg) {
-            registerMap.set(instr.targetReg, unusedReg++);
-            instrs.push(new InstrSetPrimTypeReg(
-                registerMap.get(instr.targetReg)!,
-                registerMap.get(instr.objectReg)!,
-            ));
-        }
-        else if (instr instanceof InstrSetPrimCarReg) {
-            registerMap.set(instr.targetReg, unusedReg++);
-            instrs.push(new InstrSetPrimCarReg(
-                registerMap.get(instr.targetReg)!,
-                registerMap.get(instr.objectReg)!,
-            ));
-        }
-        else if (instr instanceof InstrSetPrimCdrReg) {
-            registerMap.set(instr.targetReg, unusedReg++);
-            instrs.push(new InstrSetPrimCdrReg(
-                registerMap.get(instr.targetReg)!,
-                registerMap.get(instr.objectReg)!,
-            ));
-        }
-        else if (instr instanceof InstrSetReg) {
-            registerMap.set(instr.targetReg, unusedReg++);
-            instrs.push(new InstrSetReg(
-                registerMap.get(instr.targetReg)!,
-                registerMap.get(instr.sourceReg)!,
-            ));
-        }
-        else if (instr instanceof InstrArgsStart) {
-            instrs.push(new InstrArgsStart());
-        }
-        else if (instr instanceof InstrArgOne) {
-            instrs.push(new InstrArgOne(
-                registerMap.get(instr.register)!,
-            ));
-        }
-        else if (instr instanceof InstrArgsEnd) {
-            instrs.push(new InstrArgsEnd());
-        }
-        else if (instr instanceof InstrSetApply) {
-            registerMap.set(instr.targetReg, unusedReg++);
-            instrs.push(new InstrSetApply(
-                registerMap.get(instr.targetReg)!,
-                registerMap.get(instr.funcReg)!,
-            ));
-        }
-        else if (instr instanceof InstrJmp) {
-            throw new Error("Need to handle labels/jumps in 'inline'");
-        }
-        else if (instr instanceof InstrJmpIfReg) {
-            throw new Error("Need to handle labels/jumps in 'inline'");
-        }
-        else if (instr instanceof InstrJmpUnlessReg) {
-            throw new Error("Need to handle labels/jumps in 'inline'");
-        }
-        else if (instr instanceof InstrSetMakeStack) {
-            registerMap.set(instr.targetReg, unusedReg++);
-            instrs.push(new InstrSetMakeStack(
-                registerMap.get(instr.targetReg)!,
-            ));
-        }
-        else if (instr instanceof InstrSetIsStackEmpty) {
-            registerMap.set(instr.targetReg, unusedReg++);
-            instrs.push(new InstrSetIsStackEmpty(
-                registerMap.get(instr.targetReg)!,
-                registerMap.get(instr.stackReg)!,
-            ));
-        }
-        else if (instr instanceof InstrSetStackPop) {
-            registerMap.set(instr.targetReg, unusedReg++);
-            instrs.push(new InstrSetStackPop(
-                registerMap.get(instr.targetReg)!,
-                registerMap.get(instr.stackReg)!,
-            ));
-        }
-        else if (instr instanceof InstrStackPush) {
-            instrs.push(new InstrStackPush(
-                registerMap.get(instr.stackReg)!,
-                registerMap.get(instr.valueReg)!,
-            ));
-        }
         else {
-            let _coverageCheck: never = instr;
-            return _coverageCheck;
+            instrs.push(
+                cloneInstr(instr)
+                    .forEachOutReg((targetReg) => {
+                        registerMap.set(targetReg, unusedReg++);
+                    })
+                    .changeAllRegs((reg) => registerMap.get(reg)!)
+            );
         }
     }
 
