@@ -11,10 +11,6 @@ import {
     InstrSetGetGlobal,
     InstrSetIsStackEmpty,
     InstrSetMakeStack,
-    InstrSetPrimCarReg,
-    InstrSetPrimCdrReg,
-    InstrSetPrimIdRegSym,
-    InstrSetPrimTypeReg,
     InstrSetReg,
     InstrSetStackPop,
     InstrStackPush,
@@ -24,6 +20,9 @@ import {
 import {
     query,
 } from "./query-target";
+import {
+    computeDataflow,
+} from "./dataflow";
 
 function enumerate<T>(array: Array<T>): Array<[number, T]> {
     let result: Array<[number, T]> = [];
@@ -80,75 +79,8 @@ export function taba(origTarget: Target): Target {
         ))
         .accumOne((instr) => (instr as InstrSetApply).targetReg);
 
-    let dataFlow = new Map<Register, Set<Register>>();
-
-    function addDataFlow(sourceReg: Register, targetReg: Register): void {
-        if (!dataFlow.has(sourceReg)) {
-            dataFlow.set(sourceReg, new Set());
-        }
-        dataFlow.get(sourceReg)!.add(targetReg);
-    }
-
-    for (let instr of origInstrs) {
-        if (instr instanceof InstrSetPrimCarReg) {
-            addDataFlow(instr.objectReg, instr.targetReg);
-        }
-        else if (instr instanceof InstrSetPrimCdrReg) {
-            addDataFlow(instr.objectReg, instr.targetReg);
-        }
-        else if (instr instanceof InstrSetPrimIdRegSym) {
-            addDataFlow(instr.leftReg, instr.targetReg);
-        }
-        else if (instr instanceof InstrSetPrimTypeReg) {
-            addDataFlow(instr.objectReg, instr.targetReg);
-        }
-        else if (instr instanceof InstrSetReg) {
-            addDataFlow(instr.sourceReg, instr.targetReg);
-        }
-        else if (instr instanceof InstrArgOne) {
-            addDataFlow(instr.register, -2 as Register);
-        }
-        else if (instr instanceof InstrSetApply) {
-            let targetReg = instr.targetReg;
-            for (let [source, targets] of dataFlow.entries()) {
-                dataFlow.set(
-                    source,
-                    new Set([...targets].map((target) =>
-                        target === -2 ? targetReg : target
-                    )),
-                );
-            }
-            addDataFlow(instr.funcReg, targetReg);
-        }
-        else if (instr instanceof InstrReturnReg) {
-            addDataFlow(instr.returnReg, -1 as Register);
-        }
-        else if (instr instanceof InstrJmpIfReg) {
-            addDataFlow(instr.testReg, -1 as Register);
-        }
-        else if (instr instanceof InstrJmpUnlessReg) {
-            addDataFlow(instr.testReg, -1 as Register);
-        }
-        else if (instr instanceof InstrStackPush) {
-            addDataFlow(instr.valueReg, instr.stackReg);
-        }
-        else if (instr instanceof InstrSetIsStackEmpty) {
-            addDataFlow(instr.stackReg, instr.targetReg);
-        }
-        else if (instr instanceof InstrSetStackPop) {
-            addDataFlow(instr.stackReg, instr.targetReg);
-        }
-        // non-exhaustive list of instruction types
-    }
-
-    let straddlingRegisters = [...dataFlow.keys()]
-        .filter((sourceReg) =>
-            sourceReg > maxReqReg &&
-            sourceReg < registerWithRecursiveResult &&
-            [...dataFlow.get(sourceReg)!].some((targetReg) =>
-                targetReg > registerWithRecursiveResult
-            ));
-
+    let straddlingRegisters = computeDataflow(origInstrs)
+        .straddling(maxReqReg, registerWithRecursiveResult);
     if (straddlingRegisters.length !== 1) {
         return origTarget;
     }
