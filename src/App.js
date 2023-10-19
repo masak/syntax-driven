@@ -432,7 +432,7 @@ const App = (props) => (
         </li>
 
         <li>
-            <strong>hotswapping</strong> and
+            <strong>hotswapping</strong> and { " " }
             <strong>edit-and-continue</strong>, meaning you can be in a
             session (or even stand on a breakpoint in a function), and
             change the code, and it immediately takes effect (just like
