@@ -23,6 +23,9 @@ import {
 import {
     computeDataflow,
 } from "./dataflow";
+import {
+    TargetWriter,
+} from "./write-target";
 
 function enumerate<T>(array: Array<T>): Array<[number, T]> {
     let result: Array<[number, T]> = [];
@@ -86,9 +89,9 @@ export function taba(origTarget: Target): Target {
     }
     let straddlingRegister = straddlingRegisters[0];
 
-    let newInstrs: Array<Instr> = [];
+    let writer = new TargetWriter();
     let stackReg = maxReqReg + 1;
-    newInstrs.push(new InstrSetMakeStack(stackReg));
+    writer.addInstr(new InstrSetMakeStack(stackReg));
     let regOffset = +1;     // since we introduced 1 new register
 
     function shiftReg(reg: Register): Register {
@@ -123,7 +126,7 @@ export function taba(origTarget: Target): Target {
             else {
                 // translate this argument passing into an assignment from
                 // a local variable to a parameter
-                newInstrs.push(new InstrSetReg(
+                writer.addInstr(new InstrSetReg(
                     argIndex as Register,
                     shiftReg(instr.register),
                 ));
@@ -132,14 +135,14 @@ export function taba(origTarget: Target): Target {
         }
 
         if (atRecursiveCall && instr instanceof InstrSetApply) {
-            newInstrs.push(new InstrStackPush(
+            writer.addInstr(new InstrStackPush(
                 stackReg,
                 shiftReg(straddlingRegister),
             ));
-            newInstrs.push(new InstrJmp("top"));
+            writer.addInstr(new InstrJmp("top"));
         }
 
-        ipMap.set(ip, newInstrs.length);
+        ipMap.set(ip, writer.instrCount());
 
         if (!activelyCopying) {
             let labelPointsHere = false;
@@ -150,30 +153,30 @@ export function taba(origTarget: Target): Target {
                 }
             }
             if (labelPointsHere) {
-                let l1 = newInstrs.length;
-                newInstrs.push(new InstrSetIsStackEmpty(
+                let l1 = writer.instrCount();
+                writer.addInstr(new InstrSetIsStackEmpty(
                     shiftReg(straddlingRegister),
                     stackReg,
                 ));
-                newInstrs.push(new InstrJmpIfReg(
+                writer.addInstr(new InstrJmpIfReg(
                     "unspool-done",
                     shiftReg(straddlingRegister),
                 ));
-                newInstrs.push(new InstrSetStackPop(
+                writer.addInstr(new InstrSetStackPop(
                     shiftReg(straddlingRegister),
                     stackReg,
                 ));
-                trailerHeaderLength = newInstrs.length - l1;
+                trailerHeaderLength = writer.instrCount() - l1;
                 for (let si of savedInstrs) {
                     if (si instanceof InstrArgOne) {
-                        newInstrs.push(new InstrArgOne(
+                        writer.addInstr(new InstrArgOne(
                             si.register === registerWithRecursiveResult
                                 ? shiftReg(returnedRegister)
                                 : shiftReg(si.register)
                         ));
                     }
                     else {
-                        newInstrs.push(shiftRegsOfInstr(si, maxReqReg));
+                        writer.addInstr(shiftRegsOfInstr(si, maxReqReg));
                     }
                 }
                 activelyCopying = true;
@@ -197,7 +200,7 @@ export function taba(origTarget: Target): Target {
             continue;
         }
 
-        newInstrs.push(shiftRegsOfInstr(instr, maxReqReg));
+        writer.addInstr(shiftRegsOfInstr(instr, maxReqReg));
     }
 
     let newLabels = new Map<string, number>();
@@ -221,7 +224,7 @@ export function taba(origTarget: Target): Target {
     return new Target(
         funcName,
         { reqCount: origTarget.header.reqCount, regCount },
-        newInstrs,
+        writer.instrs,
         newLabels,
     );
 }
