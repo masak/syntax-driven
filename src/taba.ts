@@ -89,7 +89,7 @@ export function taba(origTarget: Target): Target {
     }
     let straddlingRegister = straddlingRegisters[0];
 
-    let writer = new TargetWriter();
+    let writer = new TargetWriter(funcName, origTarget.header.reqCount);
     let stackReg = maxReqReg + 1;
     writer.addInstr(new InstrSetMakeStack(stackReg));
     writer.addLabel("top");
@@ -204,13 +204,6 @@ export function taba(origTarget: Target): Target {
         writer.addInstr(shiftRegsOfInstr(instr, maxReqReg));
     }
 
-    let regCount = shiftReg(origTarget.header.regCount);
-
-    return new Target(
-        funcName,
-        { reqCount: origTarget.header.reqCount, regCount },
-        writer.instrs,
-        writer.labels,
-    );
+    return writer.target();
 }
 
