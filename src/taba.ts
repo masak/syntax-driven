@@ -92,6 +92,7 @@ export function taba(origTarget: Target): Target {
     let writer = new TargetWriter();
     let stackReg = maxReqReg + 1;
     writer.addInstr(new InstrSetMakeStack(stackReg));
+    writer.addLabel("top");
     let regOffset = +1;     // since we introduced 1 new register
 
     function shiftReg(reg: Register): Register {
@@ -100,9 +101,6 @@ export function taba(origTarget: Target): Target {
 
     let activelyCopying = true;
     let atRecursiveCall = false;
-    let trailerHeaderLength = NaN;
-    let ipMap = new Map<number, number>();
-    let savedLabel = "<not yet saved>";
     let savedInstrs: Array<Instr> = [];
     let argIndex = 0;
     let returnedRegister = query(origTarget)
@@ -142,18 +140,21 @@ export function taba(origTarget: Target): Target {
             writer.addInstr(new InstrJmp("top"));
         }
 
-        ipMap.set(ip, writer.instrCount());
+        for (let [label, labelIp] of origLabels.entries()) {
+            if (ip === labelIp) {
+                writer.addLabel(label);
+            }
+        }
 
         if (!activelyCopying) {
             let labelPointsHere = false;
-            for (let [label, labelIp] of origLabels.entries()) {
+            for (let labelIp of origLabels.values()) {
                 if (labelIp === ip) {
                     labelPointsHere = true;
-                    savedLabel = label;
                 }
             }
             if (labelPointsHere) {
-                let l1 = writer.instrCount();
+                writer.addLabel("unspool");
                 writer.addInstr(new InstrSetIsStackEmpty(
                     shiftReg(straddlingRegister),
                     stackReg,
@@ -166,7 +167,6 @@ export function taba(origTarget: Target): Target {
                     shiftReg(straddlingRegister),
                     stackReg,
                 ));
-                trailerHeaderLength = writer.instrCount() - l1;
                 for (let si of savedInstrs) {
                     if (si instanceof InstrArgOne) {
                         writer.addInstr(new InstrArgOne(
@@ -179,6 +179,7 @@ export function taba(origTarget: Target): Target {
                         writer.addInstr(shiftRegsOfInstr(si, maxReqReg));
                     }
                 }
+                writer.addLabel("unspool-done");
                 activelyCopying = true;
             }
             else {
@@ -203,29 +204,13 @@ export function taba(origTarget: Target): Target {
         writer.addInstr(shiftRegsOfInstr(instr, maxReqReg));
     }
 
-    let newLabels = new Map<string, number>();
-    newLabels.set("top", 1);
-    for (let [label, ip] of origLabels.entries()) {
-        let newIp = ipMap.get(ip);
-        if (typeof newIp === "number") {
-            newLabels.set(label, newIp);
-        }
-    }
-    newLabels.set("unspool", ipMap.get(origLabels.get(savedLabel)!)!);
-    newLabels.set(
-        "unspool-done",
-        ipMap.get(origLabels.get(savedLabel)!)! +
-            savedInstrs.length +
-            trailerHeaderLength,
-    );
-
     let regCount = shiftReg(origTarget.header.regCount);
 
     return new Target(
         funcName,
         { reqCount: origTarget.header.reqCount, regCount },
         writer.instrs,
-        newLabels,
+        writer.labels,
     );
 }
 
