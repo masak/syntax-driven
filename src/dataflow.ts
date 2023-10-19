@@ -2,14 +2,8 @@ import {
     Instr,
     InstrArgOne,
     InstrSetApply,
-    InstrSetIsStackEmpty,
-    InstrSetPrimCarReg,
-    InstrSetPrimCdrReg,
-    InstrSetPrimIdRegSym,
-    InstrSetPrimTypeReg,
-    InstrSetReg,
-    InstrSetStackPop,
     InstrStackPush,
+    isSetInstr,
     Register,
 } from "./target";
 
@@ -39,25 +33,20 @@ export function computeDataflow(instrs: Array<Instr>): Dataflow {
     }
 
     for (let instr of instrs) {
-        if (instr instanceof InstrSetPrimCarReg) {
-            addDataFlow(instr.objectReg, instr.targetReg);
-        }
-        else if (instr instanceof InstrSetPrimCdrReg) {
-            addDataFlow(instr.objectReg, instr.targetReg);
-        }
-        else if (instr instanceof InstrSetPrimIdRegSym) {
-            addDataFlow(instr.leftReg, instr.targetReg);
-        }
-        else if (instr instanceof InstrSetPrimTypeReg) {
-            addDataFlow(instr.objectReg, instr.targetReg);
-        }
-        else if (instr instanceof InstrSetReg) {
-            addDataFlow(instr.sourceReg, instr.targetReg);
+        if (isSetInstr(instr)) {
+            let targetReg = instr.targetReg;
+            instr.forEachInReg((register) => {
+                addDataFlow(register, targetReg);
+            });
         }
         else if (instr instanceof InstrArgOne) {
             addDataFlow(instr.register, -2 as Register);
         }
-        else if (instr instanceof InstrSetApply) {
+        else if (instr instanceof InstrStackPush) {
+            addDataFlow(instr.valueReg, instr.stackReg);
+        }
+
+        if (instr instanceof InstrSetApply) {
             let targetReg = instr.targetReg;
             for (let [source, targets] of dataflow.entries()) {
                 dataflow.set(
@@ -67,18 +56,7 @@ export function computeDataflow(instrs: Array<Instr>): Dataflow {
                     )),
                 );
             }
-            addDataFlow(instr.funcReg, targetReg);
         }
-        else if (instr instanceof InstrStackPush) {
-            addDataFlow(instr.valueReg, instr.stackReg);
-        }
-        else if (instr instanceof InstrSetIsStackEmpty) {
-            addDataFlow(instr.stackReg, instr.targetReg);
-        }
-        else if (instr instanceof InstrSetStackPop) {
-            addDataFlow(instr.stackReg, instr.targetReg);
-        }
-        // non-exhaustive list of instruction types
     }
 
     return new Dataflow(dataflow);

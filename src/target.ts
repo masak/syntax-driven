@@ -54,6 +54,17 @@ abstract class InstrBase {
         return this;
     }
 
+    forEachInReg(fn: (reg: Register) => void): this {
+        let fields = instrFields.get(this.constructor)!;
+        for (let [fieldName, type] of fields) {
+            if (type === "in reg") {
+                fn((this as any)[fieldName]);
+            }
+        }
+
+        return this;
+    }
+
     changeAllRegs(fn: (reg: Register) => Register): this {
         let fields = instrFields.get(this.constructor)!;
         for (let [fieldName, type] of fields) {
