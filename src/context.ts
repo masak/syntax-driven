@@ -16,7 +16,6 @@ import {
 
 export class Context {
     writer: TargetWriter | null = null;
-    unusedReg = 0;
     registerMap = new Map<string, Register>();
     topIndex = 0;
     reqCount = -1;
@@ -29,10 +28,6 @@ export class Context {
     ) {
     }
 
-    nextReg(): Register {
-        return this.unusedReg++;
-    }
-
     nextAvailableLabel(prefix: string) {
         return this.writer!.nextAvailableLabel(prefix);
     }
@@ -41,9 +36,10 @@ export class Context {
         this.topIndex = this.writer!.instrs.length;
     }
 
-    setReqCount(reqCount: number) {
+    setReqCount(reqCount: number, unusedReg: number) {
         this.reqCount = reqCount;
         this.writer = new TargetWriter(this.sourceName, reqCount);
+        this.writer.unusedReg = unusedReg;
     }
 }
 

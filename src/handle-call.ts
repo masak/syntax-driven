@@ -38,9 +38,9 @@ export function handleCall(
     ) => Register,
 ): Register | null {
 
-    function resultRegOrNextReg() {
+    function resultRegOrNextReg(): Register {
         return resultRegister === null
-            ? ctx.nextReg()
+            ? ctx.writer!.nextReg()
             : resultRegister;
     }
 
@@ -67,9 +67,9 @@ export function handleCall(
                 ctx.env.get(opName),
                 argRegs,
                 ctx.writer!,
-                ctx.unusedReg,
+                ctx.writer!.unusedReg,
             );
-            ctx.unusedReg = targetReg + 1;
+            ctx.writer!.unusedReg = targetReg + 1;
         }
         else if (ctx.sourceName === opName && isTailContext &&
                     ctx.conf.eliminateTailSelfCalls) {
@@ -109,7 +109,7 @@ export function handleCall(
         }
         else {
             let argRegs = args.map((a) => handle(a, ctx));
-            let funcReg = ctx.nextReg();
+            let funcReg = ctx.writer!.nextReg();
             ctx.writer!.addInstr(new InstrSetGetGlobal(funcReg, opName));
             ctx.writer!.addInstr(new InstrArgsStart());
             for (let reg of argRegs) {

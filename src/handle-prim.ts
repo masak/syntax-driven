@@ -48,7 +48,7 @@ export function handlePrim(
 
     function resultRegOrNextReg() {
         return resultRegister === null
-            ? ctx.nextReg()
+            ? ctx.writer!.nextReg()
             : resultRegister;
     }
 

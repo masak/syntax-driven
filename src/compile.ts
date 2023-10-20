@@ -49,7 +49,7 @@ function handlePossiblyTail(
 
     function resultRegOrNextReg() {
         return resultRegister === null
-            ? ctx.nextReg()
+            ? ctx.writer!.nextReg()
             : resultRegister;
     }
 
@@ -150,6 +150,7 @@ export function compile(
     );
 
     let maxReqReg = -1;
+    let unusedReg = 0;
 
     // param handling
     if (source.params instanceof AstList) {
@@ -157,7 +158,7 @@ export function compile(
             if (!(param instanceof AstSymbol)) {
                 throw new Error("non-symbol parameter -- todo");
             }
-            let paramReg = ctx.nextReg();
+            let paramReg = unusedReg++;
             ctx.registerMap.set(param.name, paramReg);
             maxReqReg = paramReg;
         }
@@ -166,7 +167,7 @@ export function compile(
         throw new Error("rest parameter -- todo");
     }
 
-    ctx.setReqCount(maxReqReg + 1);
+    ctx.setReqCount(maxReqReg + 1, unusedReg);
     ctx.setTopIndex();
 
     // body

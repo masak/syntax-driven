@@ -1,6 +1,7 @@
 import {
     Instr,
     isSetInstr,
+    Register,
     SetInstr,
     Target,
 } from "./target";
@@ -8,6 +9,7 @@ import {
 export class TargetWriter {
     instrs: Array<Instr> = [];
     labels = new Map<string, number>();
+    unusedReg = 0;
 
     constructor(public funcName: string, public reqCount: number) {
     }
@@ -43,6 +45,10 @@ export class TargetWriter {
             }
             n += 1;
         }
+    }
+
+    nextReg(): Register {
+        return this.unusedReg++;
     }
 
     target(): Target {
