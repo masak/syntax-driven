@@ -12,7 +12,6 @@ import {
     InstrSetGetSymbol,
     InstrSetReg,
     InstrReturnReg,
-    isSetInstr,
     Register,
     Target,
 } from "./target";
@@ -58,20 +57,20 @@ function handlePossiblyTail(
         let name = ast.name;
         if (selfQuotingSymbols.has(name)) {
             let symbolReg = resultRegOrNextReg();
-            ctx.instrs.push(new InstrSetGetSymbol(symbolReg, name));
+            ctx.writer!.addInstr(new InstrSetGetSymbol(symbolReg, name));
             return symbolReg;
         }
         else if (ctx.registerMap.has(name)) {
             let localReg = ctx.registerMap.get(name)!;
             if (resultRegister !== null) {
-                ctx.instrs.push(new InstrSetReg(resultRegister, localReg));
+                ctx.writer!.addInstr(new InstrSetReg(resultRegister, localReg));
                 return resultRegister;
             }
             return localReg;
         }
         else if (ctx.env.has(name)) {
             let globalReg = resultRegOrNextReg();
-            ctx.instrs.push(new InstrSetGetGlobal(globalReg, name));
+            ctx.writer!.addInstr(new InstrSetGetGlobal(globalReg, name));
             return globalReg;
         }
         throw new Error(`Unrecognized variable: '${name}'`);
@@ -143,7 +142,12 @@ export function compile(
     env: Env,
     conf: Conf = OPT_ALL,
 ): Target {
-    let ctx = new Context(source.name, source.params, env, conf);
+    let ctx = new Context(
+        source.name,
+        source.params,
+        env,
+        conf,
+    );
 
     let maxReqReg = -1;
 
@@ -162,6 +166,7 @@ export function compile(
         throw new Error("rest parameter -- todo");
     }
 
+    ctx.setReqCount(maxReqReg + 1);
     ctx.setTopIndex();
 
     // body
@@ -175,20 +180,10 @@ export function compile(
         }
     }
     if (returnReg !== null) {
-        ctx.instrs.push(new InstrReturnReg(returnReg));
+        ctx.writer!.addInstr(new InstrReturnReg(returnReg));
     }
 
-    let reqCount = maxReqReg + 1;
-    let regCount = Math.max(
-        ...ctx.instrs.filter(isSetInstr).map((i) => i.targetReg)
-    ) + 1;
-
-    let target = new Target(
-        source.name,
-        { reqCount, regCount },
-        ctx.instrs,
-        ctx.labelMap,
-    );
+    let target = ctx.writer!.target();
 
     return (conf.eliminateSelfCalls && taba(target)) || target;
 }

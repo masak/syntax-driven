@@ -47,13 +47,13 @@ export function handleCall(
     if (ctx.registerMap.has(opName)) {
         let funcReg = ctx.registerMap.get(opName)!;
         let argRegs = args.map((a) => handle(a, ctx));
-        ctx.instrs.push(new InstrArgsStart());
+        ctx.writer!.addInstr(new InstrArgsStart());
         for (let reg of argRegs) {
-            ctx.instrs.push(new InstrArgOne(reg));
+            ctx.writer!.addInstr(new InstrArgOne(reg));
         }
-        ctx.instrs.push(new InstrArgsEnd());
+        ctx.writer!.addInstr(new InstrArgsEnd());
         let targetReg = resultRegOrNextReg();
-        ctx.instrs.push(new InstrSetApply(targetReg, funcReg));
+        ctx.writer!.addInstr(new InstrSetApply(targetReg, funcReg));
         return targetReg;
     }
     else if (ctx.env.has(opName) || ctx.sourceName === opName) {
@@ -66,7 +66,7 @@ export function handleCall(
             targetReg = inline(
                 ctx.env.get(opName),
                 argRegs,
-                ctx.instrs,
+                ctx.writer!,
                 ctx.unusedReg,
             );
             ctx.unusedReg = targetReg + 1;
@@ -103,21 +103,21 @@ export function handleCall(
             else if (ctx.sourceParams instanceof AstSymbol) {
                 throw new Error("rest parameter -- todo");
             }
-            ctx.labelMap.set("top", ctx.topIndex);
-            ctx.instrs.push(new InstrJmp("top"));
+            ctx.writer!.addLabel("top", ctx.topIndex);
+            ctx.writer!.addInstr(new InstrJmp("top"));
             targetReg = null;
         }
         else {
             let argRegs = args.map((a) => handle(a, ctx));
             let funcReg = ctx.nextReg();
-            ctx.instrs.push(new InstrSetGetGlobal(funcReg, opName));
-            ctx.instrs.push(new InstrArgsStart());
+            ctx.writer!.addInstr(new InstrSetGetGlobal(funcReg, opName));
+            ctx.writer!.addInstr(new InstrArgsStart());
             for (let reg of argRegs) {
-                ctx.instrs.push(new InstrArgOne(reg));
+                ctx.writer!.addInstr(new InstrArgOne(reg));
             }
-            ctx.instrs.push(new InstrArgsEnd());
+            ctx.writer!.addInstr(new InstrArgsEnd());
             targetReg = resultRegOrNextReg();
-            ctx.instrs.push(new InstrSetApply(targetReg, funcReg));
+            ctx.writer!.addInstr(new InstrSetApply(targetReg, funcReg));
         }
         return targetReg;
     }

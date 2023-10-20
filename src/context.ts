@@ -5,19 +5,21 @@ import {
     Env,
 } from "./env";
 import {
-    Instr,
     Register,
 } from "./target";
 import {
     Conf,
 } from "./conf";
+import {
+    TargetWriter,
+} from "./write-target";
 
 export class Context {
-    instrs: Array<Instr> = [];
+    writer: TargetWriter | null = null;
     unusedReg = 0;
-    labelMap = new Map<string, number>();
     registerMap = new Map<string, Register>();
     topIndex = 0;
+    reqCount = -1;
 
     constructor(
         public sourceName: string,
@@ -32,18 +34,16 @@ export class Context {
     }
 
     nextAvailableLabel(prefix: string) {
-        let n = 1;
-        while (true) {
-            let label = `${prefix}-${n}`;
-            if (!this.labelMap.has(label)) {
-                return label;
-            }
-            n += 1;
-        }
+        return this.writer!.nextAvailableLabel(prefix);
     }
 
     setTopIndex() {
-        this.topIndex = this.instrs.length;
+        this.topIndex = this.writer!.instrs.length;
+    }
+
+    setReqCount(reqCount: number) {
+        this.reqCount = reqCount;
+        this.writer = new TargetWriter(this.sourceName, reqCount);
     }
 }
 

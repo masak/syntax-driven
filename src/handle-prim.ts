@@ -62,7 +62,7 @@ export function handlePrim(
         if (!qSym(r1) && r2Sym !== null) {
             let r1r = handle(r1, ctx);
             let targetReg = resultRegOrNextReg();
-            ctx.instrs.push(
+            ctx.writer!.addInstr(
                 new InstrSetPrimIdRegSym(targetReg, r1r, r2Sym)
             );
             return targetReg;
@@ -78,7 +78,7 @@ export function handlePrim(
         let r1 = args[0];
         let r1r = handle(r1, ctx);
         let targetReg = resultRegOrNextReg();
-        ctx.instrs.push(new InstrSetPrimTypeReg(targetReg, r1r));
+        ctx.writer!.addInstr(new InstrSetPrimTypeReg(targetReg, r1r));
         return targetReg;
     }
     else if (opName === "car") {
@@ -88,7 +88,7 @@ export function handlePrim(
         let r1 = args[0];
         let r1r = handle(r1, ctx);
         let targetReg = resultRegOrNextReg();
-        ctx.instrs.push(new InstrSetPrimCarReg(targetReg, r1r));
+        ctx.writer!.addInstr(new InstrSetPrimCarReg(targetReg, r1r));
         return targetReg;
     }
     else if (opName === "cdr") {
@@ -98,7 +98,7 @@ export function handlePrim(
         let r1 = args[0];
         let r1r = handle(r1, ctx);
         let targetReg = resultRegOrNextReg();
-        ctx.instrs.push(new InstrSetPrimCdrReg(targetReg, r1r));
+        ctx.writer!.addInstr(new InstrSetPrimCdrReg(targetReg, r1r));
         return targetReg;
     }
     else {

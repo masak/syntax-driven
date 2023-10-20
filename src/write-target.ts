@@ -1,5 +1,7 @@
 import {
     Instr,
+    isSetInstr,
+    SetInstr,
     Target,
 } from "./target";
 
@@ -18,8 +20,29 @@ export class TargetWriter {
         return this.instrs.length;
     }
 
-    addLabel(label: string): void {
-        this.labels.set(label, this.instrCount());
+    ifLastInstrIsSetInstr(fn: (instr: SetInstr) => void): void {
+        let lastInstr = this.instrs[this.instrs.length - 1];
+        if (lastInstr === undefined) {
+            throw new Error("Precondition failed: last instr doesn't exist");
+        }
+        if (isSetInstr(lastInstr)) {
+            fn(lastInstr);
+        }
+    }
+
+    addLabel(label: string, ip = this.instrCount()): void {
+        this.labels.set(label, ip);
+    }
+
+    nextAvailableLabel(prefix: string) {
+        let n = 1;
+        while (true) {
+            let label = `${prefix}-${n}`;
+            if (!this.labels.has(label)) {
+                return label;
+            }
+            n += 1;
+        }
     }
 
     target(): Target {

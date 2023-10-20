@@ -4,7 +4,6 @@ import {
 import {
     InstrJmp,
     InstrJmpUnlessReg,
-    isSetInstr,
     Register,
     SetInstr,
 } from "./target";
@@ -54,7 +53,7 @@ export function handleControl(
             let test = args[i];
             let rTest = handle(test, ctx);
             let branchLabel = ctx.nextAvailableLabel("if-branch");
-            ctx.instrs.push(new InstrJmpUnlessReg(branchLabel, rTest));
+            ctx.writer!.addInstr(new InstrJmpUnlessReg(branchLabel, rTest));
             let consequent = args[i + 1];
             let rConsequent = handlePossiblyTail(
                 consequent,
@@ -63,13 +62,12 @@ export function handleControl(
                 REGISTER_NOT_YET_KNOWN,
             );
             if (rConsequent !== null) {
-                let lastInstr = ctx.instrs[ctx.instrs.length - 1];
-                if (isSetInstr(lastInstr)) {
-                    fixups.push(lastInstr);
-                    ctx.instrs.push(new InstrJmp(ifEndLabel));
-                }
+                ctx.writer!.ifLastInstrIsSetInstr((instr) => {
+                    fixups.push(instr);
+                    ctx.writer!.addInstr(new InstrJmp(ifEndLabel));
+                });
             }
-            ctx.labelMap.set(branchLabel, ctx.instrs.length);
+            ctx.writer!.addLabel(branchLabel);
         }
         if (args.length % 2 !== 0) {
             let consequent = args[args.length - 1];
@@ -80,13 +78,12 @@ export function handleControl(
                 REGISTER_NOT_YET_KNOWN,
             );
             if (rConsequent !== null) {
-                let lastInstr = ctx.instrs[ctx.instrs.length - 1];
-                if (isSetInstr(lastInstr)) {
-                    fixups.push(lastInstr);
-                }
+                ctx.writer!.ifLastInstrIsSetInstr((instr) => {
+                    fixups.push(instr);
+                });
             }
         }
-        ctx.labelMap.set(ifEndLabel, ctx.instrs.length);
+        ctx.writer!.addLabel(ifEndLabel);
 
         let resultRegister = resultRegOrNextReg();
         for (let instr of fixups) {

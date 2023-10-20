@@ -1,15 +1,17 @@
 import {
     cloneInstr,
-    Instr,
     InstrReturnReg,
     Register,
     Target,
 } from "./target";
+import {
+    TargetWriter,
+} from "./write-target";
 
 export function inline(
     callee: Target,
     argRegs: Array<Register>,
-    instrs: Array<Instr>,
+    writer: TargetWriter,
     unusedReg: Register,
 ) {
     let registerMap: Map<Register, Register> = new Map();
@@ -27,7 +29,7 @@ export function inline(
             return registerMap.get(instr.returnReg)!;
         }
         else {
-            instrs.push(
+            writer.addInstr(
                 cloneInstr(instr)
                     .forEachOutReg((targetReg) => {
                         registerMap.set(targetReg, unusedReg++);
