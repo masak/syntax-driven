@@ -8,8 +8,8 @@ import {
     SetInstr,
 } from "./target";
 import {
-    Context,
-} from "./context";
+    TargetWriter,
+} from "./write-target";
 
 const controlNames = ["if"];
 
@@ -24,17 +24,17 @@ const REGISTER_NOT_YET_KNOWN = -1;
 export function handleControl(
     opName: ControlName,
     args: Array<Ast>,
-    ctx: Context,
+    writer: TargetWriter,
     isTailContext: boolean,
     resultRegister: Register | null = null,
     handle: (
         ast: Ast,
-        ctx: Context,
+        writer: TargetWriter,
         resultRegister?: Register | null,
     ) => Register,
     handlePossiblyTail: (
         ast: Ast,
-        ctx: Context,
+        writer: TargetWriter,
         isTailContext: boolean,
         resultRegister?: Register | null,
     ) => Register | null,
@@ -42,48 +42,48 @@ export function handleControl(
 
     function resultRegOrNextReg() {
         return resultRegister === null
-            ? ctx.writer!.nextReg()
+            ? writer.nextReg()
             : resultRegister;
     }
 
     if (opName === "if") {
         let fixups: Array<SetInstr> = [];
-        let ifEndLabel = ctx.nextAvailableLabel("if-end");
+        let ifEndLabel = writer.nextAvailableLabel("if-end");
         for (let i = 0; i < args.length - 1; i += 2) {
             let test = args[i];
-            let rTest = handle(test, ctx);
-            let branchLabel = ctx.nextAvailableLabel("if-branch");
-            ctx.writer!.addInstr(new InstrJmpUnlessReg(branchLabel, rTest));
+            let rTest = handle(test, writer);
+            let branchLabel = writer.nextAvailableLabel("if-branch");
+            writer.addInstr(new InstrJmpUnlessReg(branchLabel, rTest));
             let consequent = args[i + 1];
             let rConsequent = handlePossiblyTail(
                 consequent,
-                ctx,
+                writer,
                 isTailContext,
                 REGISTER_NOT_YET_KNOWN,
             );
             if (rConsequent !== null) {
-                ctx.writer!.ifLastInstrIsSetInstr((instr) => {
+                writer.ifLastInstrIsSetInstr((instr) => {
                     fixups.push(instr);
-                    ctx.writer!.addInstr(new InstrJmp(ifEndLabel));
+                    writer.addInstr(new InstrJmp(ifEndLabel));
                 });
             }
-            ctx.writer!.addLabel(branchLabel);
+            writer.addLabel(branchLabel);
         }
         if (args.length % 2 !== 0) {
             let consequent = args[args.length - 1];
             let rConsequent = handlePossiblyTail(
                 consequent,
-                ctx,
+                writer,
                 isTailContext,
                 REGISTER_NOT_YET_KNOWN,
             );
             if (rConsequent !== null) {
-                ctx.writer!.ifLastInstrIsSetInstr((instr) => {
+                writer.ifLastInstrIsSetInstr((instr) => {
                     fixups.push(instr);
                 });
             }
         }
-        ctx.writer!.addLabel(ifEndLabel);
+        writer.addLabel(ifEndLabel);
 
         let resultRegister = resultRegOrNextReg();
         for (let instr of fixups) {

@@ -11,8 +11,8 @@ import {
     Register,
 } from "./target";
 import {
-    Context,
-} from "./context";
+    TargetWriter,
+} from "./write-target";
 
 const primNames = ["id", "type", "car", "cdr"];
 
@@ -37,18 +37,18 @@ function qSym(ast: Ast): string | null {
 export function handlePrim(
     opName: PrimName,
     args: Array<Ast>,
-    ctx: Context,
+    writer: TargetWriter,
     resultRegister: Register | null = null,
     handle: (
         ast: Ast,
-        ctx: Context,
+        writer: TargetWriter,
         resultRegister?: Register | null,
     ) => Register,
 ): Register {
 
     function resultRegOrNextReg() {
         return resultRegister === null
-            ? ctx.writer!.nextReg()
+            ? writer.nextReg()
             : resultRegister;
     }
 
@@ -60,9 +60,9 @@ export function handlePrim(
         let r2 = args[1];
         let r2Sym = qSym(r2);
         if (!qSym(r1) && r2Sym !== null) {
-            let r1r = handle(r1, ctx);
+            let r1r = handle(r1, writer);
             let targetReg = resultRegOrNextReg();
-            ctx.writer!.addInstr(
+            writer.addInstr(
                 new InstrSetPrimIdRegSym(targetReg, r1r, r2Sym)
             );
             return targetReg;
@@ -76,9 +76,9 @@ export function handlePrim(
             throw new Error("Not enough operands for 'type'");
         }
         let r1 = args[0];
-        let r1r = handle(r1, ctx);
+        let r1r = handle(r1, writer);
         let targetReg = resultRegOrNextReg();
-        ctx.writer!.addInstr(new InstrSetPrimTypeReg(targetReg, r1r));
+        writer.addInstr(new InstrSetPrimTypeReg(targetReg, r1r));
         return targetReg;
     }
     else if (opName === "car") {
@@ -86,9 +86,9 @@ export function handlePrim(
             throw new Error("Not enough operands for 'car'");
         }
         let r1 = args[0];
-        let r1r = handle(r1, ctx);
+        let r1r = handle(r1, writer);
         let targetReg = resultRegOrNextReg();
-        ctx.writer!.addInstr(new InstrSetPrimCarReg(targetReg, r1r));
+        writer.addInstr(new InstrSetPrimCarReg(targetReg, r1r));
         return targetReg;
     }
     else if (opName === "cdr") {
@@ -96,9 +96,9 @@ export function handlePrim(
             throw new Error("Not enough operands for 'cdr'");
         }
         let r1 = args[0];
-        let r1r = handle(r1, ctx);
+        let r1r = handle(r1, writer);
         let targetReg = resultRegOrNextReg();
-        ctx.writer!.addInstr(new InstrSetPrimCdrReg(targetReg, r1r));
+        writer.addInstr(new InstrSetPrimCdrReg(targetReg, r1r));
         return targetReg;
     }
     else {

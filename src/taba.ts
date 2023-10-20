@@ -1,4 +1,7 @@
 import {
+    Ast,
+} from "./source";
+import {
     cloneInstr,
     Instr,
     InstrArgOne,
@@ -26,6 +29,12 @@ import {
 import {
     TargetWriter,
 } from "./write-target";
+import {
+    Env,
+} from "./env";
+import {
+    OPT_ALL,
+} from "./conf";
 
 function enumerate<T>(array: Array<T>): Array<[number, T]> {
     let result: Array<[number, T]> = [];
@@ -45,7 +54,7 @@ function shiftRegsOfInstr(instr: Instr, maxReqReg: number): Instr {
     return cloneInstr(instr).changeAllRegs(shiftReg);
 }
 
-export function taba(origTarget: Target): Target {
+export function taba(origTarget: Target, sourceParams: Ast): Target {
     let funcName = origTarget.name;
     let origInstrs = origTarget.body;
     let origLabels = origTarget.labels;
@@ -89,7 +98,12 @@ export function taba(origTarget: Target): Target {
     }
     let straddlingRegister = straddlingRegisters[0];
 
-    let writer = new TargetWriter(funcName, origTarget.header.reqCount);
+    let writer = new TargetWriter(
+        funcName,
+        sourceParams,
+        new Env(),
+        OPT_ALL,
+    );
     let stackReg = maxReqReg + 1;
     writer.addInstr(new InstrSetMakeStack(stackReg));
     writer.addLabel("top");

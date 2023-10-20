@@ -20,8 +20,8 @@ import {
     OPT_ALL,
 } from "./conf";
 import {
-    Context,
-} from "./context";
+    TargetWriter,
+} from "./write-target";
 import {
     taba,
 } from "./taba";
@@ -42,14 +42,14 @@ const selfQuotingSymbols = new Set(["nil", "t"]);
 
 function handlePossiblyTail(
     ast: Ast,
-    ctx: Context,
+    writer: TargetWriter,
     isTailContext: boolean,
     resultRegister: Register | null = null,
 ): Register | null {
 
     function resultRegOrNextReg() {
         return resultRegister === null
-            ? ctx.writer!.nextReg()
+            ? writer.nextReg()
             : resultRegister;
     }
 
@@ -57,20 +57,20 @@ function handlePossiblyTail(
         let name = ast.name;
         if (selfQuotingSymbols.has(name)) {
             let symbolReg = resultRegOrNextReg();
-            ctx.writer!.addInstr(new InstrSetGetSymbol(symbolReg, name));
+            writer.addInstr(new InstrSetGetSymbol(symbolReg, name));
             return symbolReg;
         }
-        else if (ctx.registerMap.has(name)) {
-            let localReg = ctx.registerMap.get(name)!;
+        else if (writer.registerMap.has(name)) {
+            let localReg = writer.registerMap.get(name)!;
             if (resultRegister !== null) {
-                ctx.writer!.addInstr(new InstrSetReg(resultRegister, localReg));
+                writer.addInstr(new InstrSetReg(resultRegister, localReg));
                 return resultRegister;
             }
             return localReg;
         }
-        else if (ctx.env.has(name)) {
+        else if (writer.env.has(name)) {
             let globalReg = resultRegOrNextReg();
-            ctx.writer!.addInstr(new InstrSetGetGlobal(globalReg, name));
+            writer.addInstr(new InstrSetGetGlobal(globalReg, name));
             return globalReg;
         }
         throw new Error(`Unrecognized variable: '${name}'`);
@@ -89,7 +89,7 @@ function handlePossiblyTail(
             return handlePrim(
                 opName,
                 args,
-                ctx,
+                writer,
                 resultRegister,
                 handle,
             );
@@ -98,18 +98,18 @@ function handlePossiblyTail(
             return handleControl(
                 opName,
                 args,
-                ctx,
+                writer,
                 isTailContext,
                 resultRegister,
                 handle,
                 handlePossiblyTail,
             );
         }
-        else if (isCall(opName, ctx)) {
+        else if (isCall(opName, writer)) {
             return handleCall(
                 opName,
                 args,
-                ctx,
+                writer,
                 isTailContext,
                 resultRegister,
                 handle,
@@ -126,11 +126,16 @@ function handlePossiblyTail(
 
 export function handle(
     ast: Ast,
-    ctx: Context,
+    writer: TargetWriter,
     resultRegister: Register | null = null,
 ): Register {
     let isTailContext = false;
-    let register = handlePossiblyTail(ast, ctx, isTailContext, resultRegister);
+    let register = handlePossiblyTail(
+        ast,
+        writer,
+        isTailContext,
+        resultRegister,
+    );
     if (register === null) {
         throw new Error("Precondition failed: null register");
     }
@@ -142,50 +147,32 @@ export function compile(
     env: Env,
     conf: Conf = OPT_ALL,
 ): Target {
-    let ctx = new Context(
+    let writer = new TargetWriter(
         source.name,
         source.params,
         env,
         conf,
     );
 
-    let maxReqReg = -1;
-    let unusedReg = 0;
-
-    // param handling
-    if (source.params instanceof AstList) {
-        for (let param of source.params.elems) {
-            if (!(param instanceof AstSymbol)) {
-                throw new Error("non-symbol parameter -- todo");
-            }
-            let paramReg = unusedReg++;
-            ctx.registerMap.set(param.name, paramReg);
-            maxReqReg = paramReg;
-        }
-    }
-    else if (source.params instanceof AstSymbol) {
-        throw new Error("rest parameter -- todo");
-    }
-
-    ctx.setReqCount(maxReqReg + 1, unusedReg);
-    ctx.setTopIndex();
+    writer.setTopIndex();
 
     // body
     let returnReg: Register | null = 0;
     let statementIndex = 0;
     for (let statement of source.body) {
         let isTailContext = statementIndex === source.body.length - 1;
-        returnReg = handlePossiblyTail(statement, ctx, isTailContext);
+        returnReg = handlePossiblyTail(statement, writer, isTailContext);
         if (returnReg === null) {
             break;
         }
     }
     if (returnReg !== null) {
-        ctx.writer!.addInstr(new InstrReturnReg(returnReg));
+        writer.addInstr(new InstrReturnReg(returnReg));
     }
 
-    let target = ctx.writer!.target();
+    let target = writer.target();
 
-    return (conf.eliminateSelfCalls && taba(target)) || target;
+    return (conf.eliminateSelfCalls && taba(target, source.params)) ||
+        target;
 }
 
