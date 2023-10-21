@@ -18,6 +18,18 @@ export function isControlName(s: string): s is ControlName {
     return controlNames.includes(s);
 }
 
+function iterateInPairs<T>(array: Array<T>, callback: (e1: T, e2: T) => void) {
+    for (let i = 0; i < array.length - 1; i += 2) {
+        callback(array[i], array[i + 1]);
+    }
+}
+
+function handleTheOddOneOut<T>(array: Array<T>, callback: (e: T) => void) {
+    if (array.length % 2 !== 0) {
+        callback(array[array.length - 1]);
+    }
+}
+
 const REGISTER_NOT_YET_KNOWN = -1;
 
 export function handleControl(
@@ -41,12 +53,10 @@ export function handleControl(
     if (opName === "if") {
         return writer.writeWithFixups((scheduleFixup) => {
             let ifEndLabel = writer.nextAvailableLabel("if-end");
-            for (let i = 0; i < args.length - 1; i += 2) {
-                let test = args[i];
+            iterateInPairs(args, (test, consequent) => {
                 let rTest = handle(test, writer);
                 let branchLabel = writer.nextAvailableLabel("if-branch");
                 writer.addInstr(new InstrJmpUnlessReg(branchLabel, rTest));
-                let consequent = args[i + 1];
                 let rConsequent = handlePossiblyTail(
                     consequent,
                     writer,
@@ -60,9 +70,8 @@ export function handleControl(
                     });
                 }
                 writer.addLabel(branchLabel);
-            }
-            if (args.length % 2 !== 0) {
-                let consequent = args[args.length - 1];
+            });
+            handleTheOddOneOut(args, (consequent) => {
                 let rConsequent = handlePossiblyTail(
                     consequent,
                     writer,
@@ -72,7 +81,7 @@ export function handleControl(
                 if (rConsequent !== null) {
                     writer.ifLastInstrIsSetInstr(scheduleFixup);
                 }
-            }
+            });
             writer.addLabel(ifEndLabel);
 
             return resultRegister;
