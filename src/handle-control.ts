@@ -52,37 +52,39 @@ export function handleControl(
 ): Register {
     if (opName === "if") {
         return writer.writeWithFixups((scheduleFixup) => {
-            let ifEndLabel = writer.nextAvailableLabel("if-end");
-            iterateInPairs(args, (test, consequent) => {
-                let rTest = handle(test, writer);
-                let branchLabel = writer.nextAvailableLabel("if-branch");
-                writer.addInstr(new InstrJmpUnlessReg(branchLabel, rTest));
-                let rConsequent = handlePossiblyTail(
-                    consequent,
-                    writer,
-                    isTailContext,
-                    REGISTER_NOT_YET_KNOWN,
-                );
-                if (rConsequent !== null) {
-                    writer.ifLastInstrIsSetInstr((instr) => {
-                        scheduleFixup(instr);
-                        writer.addInstr(new InstrJmp(ifEndLabel));
+            writer.withLabel("if-end", (ifEndLabel) => {
+                iterateInPairs(args, (test, consequent) => {
+                    let rTest = handle(test, writer);
+                    writer.withLabel("if-branch", (branchLabel) => {
+                        writer.addInstr(
+                            new InstrJmpUnlessReg(branchLabel, rTest)
+                        );
+                        let rConsequent = handlePossiblyTail(
+                            consequent,
+                            writer,
+                            isTailContext,
+                            REGISTER_NOT_YET_KNOWN,
+                        );
+                        if (rConsequent !== null) {
+                            writer.ifLastInstrIsSetInstr((instr) => {
+                                scheduleFixup(instr);
+                                writer.addInstr(new InstrJmp(ifEndLabel));
+                            });
+                        }
                     });
-                }
-                writer.addLabel(branchLabel);
+                });
+                handleTheOddOneOut(args, (consequent) => {
+                    let rConsequent = handlePossiblyTail(
+                        consequent,
+                        writer,
+                        isTailContext,
+                        REGISTER_NOT_YET_KNOWN,
+                    );
+                    if (rConsequent !== null) {
+                        writer.ifLastInstrIsSetInstr(scheduleFixup);
+                    }
+                });
             });
-            handleTheOddOneOut(args, (consequent) => {
-                let rConsequent = handlePossiblyTail(
-                    consequent,
-                    writer,
-                    isTailContext,
-                    REGISTER_NOT_YET_KNOWN,
-                );
-                if (rConsequent !== null) {
-                    writer.ifLastInstrIsSetInstr(scheduleFixup);
-                }
-            });
-            writer.addLabel(ifEndLabel);
 
             return resultRegister;
         });

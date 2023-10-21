@@ -73,15 +73,19 @@ export class TargetWriter {
         this.labels.set(label, ip);
     }
 
-    nextAvailableLabel(prefix: string) {
+    withLabel(prefix: string, callback: (label: string) => void): void {
+        let label = "";
         let n = 1;
-        while (true) {
-            let label = `${prefix}-${n}`;
+        do {
+            label = `${prefix}-${n}`;
             if (!this.labels.has(label)) {
-                return label;
+                break;
             }
             n += 1;
-        }
+        } while (true);
+
+        callback(label);
+        this.addLabel(label);
     }
 
     nextReg(): Register {
