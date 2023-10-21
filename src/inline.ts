@@ -12,7 +12,6 @@ export function inline(
     callee: Target,
     argRegs: Array<Register>,
     writer: TargetWriter,
-    unusedReg: Register,
 ) {
     let registerMap: Map<Register, Register> = new Map();
     for (let i = 0; i < callee.header.reqCount; i++) {
@@ -32,7 +31,7 @@ export function inline(
             writer.addInstr(
                 cloneInstr(instr)
                     .forEachOutReg((targetReg) => {
-                        registerMap.set(targetReg, unusedReg++);
+                        registerMap.set(targetReg, writer.unusedReg++);
                     })
                     .changeAllRegs((reg) => registerMap.get(reg)!)
             );
