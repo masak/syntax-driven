@@ -9,6 +9,9 @@ import {
 import {
     TargetWriter,
 } from "./write-target";
+import {
+    Env,
+} from "./env";
 
 const controlNames = ["if"];
 
@@ -36,16 +39,19 @@ export function handleControl(
     opName: ControlName,
     args: Array<Ast>,
     writer: TargetWriter,
+    env: Env,
     isTailContext: boolean,
     resultRegister: Register | null = null,
     handle: (
         ast: Ast,
         writer: TargetWriter,
+        env: Env,
         resultRegister?: Register | null,
     ) => Register,
     handlePossiblyTail: (
         ast: Ast,
         writer: TargetWriter,
+        env: Env,
         isTailContext: boolean,
         resultRegister?: Register | null,
     ) => Register | null,
@@ -54,7 +60,7 @@ export function handleControl(
         return writer.writeWithFixups((scheduleFixup) => {
             writer.withLabel("if-end", (ifEndLabel) => {
                 iterateInPairs(args, (test, consequent) => {
-                    let rTest = handle(test, writer);
+                    let rTest = handle(test, writer, env);
                     writer.withLabel("if-branch", (branchLabel) => {
                         writer.addInstr(
                             new InstrJmpUnlessReg(branchLabel, rTest)
@@ -62,6 +68,7 @@ export function handleControl(
                         let rConsequent = handlePossiblyTail(
                             consequent,
                             writer,
+                            env,
                             isTailContext,
                             REGISTER_NOT_YET_KNOWN,
                         );
@@ -77,6 +84,7 @@ export function handleControl(
                     let rConsequent = handlePossiblyTail(
                         consequent,
                         writer,
+                        env,
                         isTailContext,
                         REGISTER_NOT_YET_KNOWN,
                     );

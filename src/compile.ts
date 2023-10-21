@@ -43,6 +43,7 @@ const selfQuotingSymbols = new Set(["nil", "t"]);
 function handlePossiblyTail(
     ast: Ast,
     writer: TargetWriter,
+    env: Env,
     isTailContext: boolean,
     resultRegister: Register | null = null,
 ): Register | null {
@@ -68,7 +69,7 @@ function handlePossiblyTail(
             }
             return localReg;
         }
-        else if (writer.env.has(name)) {
+        else if (env.has(name)) {
             let globalReg = resultRegOrNextReg();
             writer.addInstr(new InstrSetGetGlobal(globalReg, name));
             return globalReg;
@@ -90,6 +91,7 @@ function handlePossiblyTail(
                 opName,
                 args,
                 writer,
+                env,
                 resultRegister,
                 handle,
             );
@@ -99,17 +101,19 @@ function handlePossiblyTail(
                 opName,
                 args,
                 writer,
+                env,
                 isTailContext,
                 resultRegister,
                 handle,
                 handlePossiblyTail,
             );
         }
-        else if (isCall(opName, writer)) {
+        else if (isCall(opName, writer, env)) {
             return handleCall(
                 opName,
                 args,
                 writer,
+                env,
                 isTailContext,
                 resultRegister,
                 handle,
@@ -127,12 +131,14 @@ function handlePossiblyTail(
 export function handle(
     ast: Ast,
     writer: TargetWriter,
+    env: Env,
     resultRegister: Register | null = null,
 ): Register {
     let isTailContext = false;
     let register = handlePossiblyTail(
         ast,
         writer,
+        env,
         isTailContext,
         resultRegister,
     );
@@ -150,7 +156,6 @@ export function compile(
     let writer = new TargetWriter(
         source.name,
         source.params,
-        env,
         conf,
     );
 
@@ -161,7 +166,7 @@ export function compile(
     let statementIndex = 0;
     for (let statement of source.body) {
         let isTailContext = statementIndex === source.body.length - 1;
-        returnReg = handlePossiblyTail(statement, writer, isTailContext);
+        returnReg = handlePossiblyTail(statement, writer, env, isTailContext);
         if (returnReg === null) {
             break;
         }

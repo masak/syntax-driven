@@ -13,6 +13,9 @@ import {
 import {
     TargetWriter,
 } from "./write-target";
+import {
+    Env,
+} from "./env";
 
 const primNames = ["id", "type", "car", "cdr"];
 
@@ -38,10 +41,12 @@ export function handlePrim(
     opName: PrimName,
     args: Array<Ast>,
     writer: TargetWriter,
+    env: Env,
     resultRegister: Register | null = null,
     handle: (
         ast: Ast,
         writer: TargetWriter,
+        env: Env,
         resultRegister?: Register | null,
     ) => Register,
 ): Register {
@@ -60,7 +65,7 @@ export function handlePrim(
         let r2 = args[1];
         let r2Sym = qSym(r2);
         if (!qSym(r1) && r2Sym !== null) {
-            let r1r = handle(r1, writer);
+            let r1r = handle(r1, writer, env);
             let targetReg = resultRegOrNextReg();
             writer.addInstr(
                 new InstrSetPrimIdRegSym(targetReg, r1r, r2Sym)
@@ -76,7 +81,7 @@ export function handlePrim(
             throw new Error("Not enough operands for 'type'");
         }
         let r1 = args[0];
-        let r1r = handle(r1, writer);
+        let r1r = handle(r1, writer, env);
         let targetReg = resultRegOrNextReg();
         writer.addInstr(new InstrSetPrimTypeReg(targetReg, r1r));
         return targetReg;
@@ -86,7 +91,7 @@ export function handlePrim(
             throw new Error("Not enough operands for 'car'");
         }
         let r1 = args[0];
-        let r1r = handle(r1, writer);
+        let r1r = handle(r1, writer, env);
         let targetReg = resultRegOrNextReg();
         writer.addInstr(new InstrSetPrimCarReg(targetReg, r1r));
         return targetReg;
@@ -96,7 +101,7 @@ export function handlePrim(
             throw new Error("Not enough operands for 'cdr'");
         }
         let r1 = args[0];
-        let r1r = handle(r1, writer);
+        let r1r = handle(r1, writer, env);
         let targetReg = resultRegOrNextReg();
         writer.addInstr(new InstrSetPrimCdrReg(targetReg, r1r));
         return targetReg;

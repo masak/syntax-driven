@@ -18,10 +18,13 @@ import {
 import {
     inline,
 } from "./inline";
+import {
+    Env,
+} from "./env";
 
-export function isCall(opName: string, writer: TargetWriter) {
+export function isCall(opName: string, writer: TargetWriter, env: Env) {
     return writer.registerMap.has(opName) ||
-        writer.env.has(opName) ||
+        env.has(opName) ||
         writer.sourceName === opName;
 }
 
@@ -29,11 +32,13 @@ export function handleCall(
     opName: string,
     args: Array<Ast>,
     writer: TargetWriter,
+    env: Env,
     isTailContext: boolean,
     resultRegister: Register | null = null,
     handle: (
         ast: Ast,
         writer: TargetWriter,
+        env: Env,
         resultRegister?: Register | null,
     ) => Register,
 ): Register | null {
@@ -46,7 +51,7 @@ export function handleCall(
 
     if (writer.registerMap.has(opName)) {
         let funcReg = writer.registerMap.get(opName)!;
-        let argRegs = args.map((a) => handle(a, writer));
+        let argRegs = args.map((a) => handle(a, writer, env));
         writer.addInstr(new InstrArgsStart());
         for (let reg of argRegs) {
             writer.addInstr(new InstrArgOne(reg));
@@ -56,14 +61,14 @@ export function handleCall(
         writer.addInstr(new InstrSetApply(targetReg, funcReg));
         return targetReg;
     }
-    else if (writer.env.has(opName) || writer.sourceName === opName) {
+    else if (env.has(opName) || writer.sourceName === opName) {
         let targetReg: Register | null;
-        if (writer.env.has(opName) && writer.conf.inlineKnownCalls) {
+        if (env.has(opName) && writer.conf.inlineKnownCalls) {
             let argRegs = args.map((a) => {
-                let reg = handle(a, writer);
+                let reg = handle(a, writer, env);
                 return reg;
             });
-            targetReg = inline(opName, argRegs, writer);
+            targetReg = inline(env.get(opName), argRegs, writer);
             writer.unusedReg = targetReg + 1;
         }
         else if (writer.sourceName === opName && isTailContext &&
@@ -90,7 +95,7 @@ export function handleCall(
                     }
                     else {
                         let paramReg = writer.registerMap.get(param.name)!;
-                        handle(arg, writer, paramReg);
+                        handle(arg, writer, env, paramReg);
                     }
                     index += 1;
                 }
@@ -103,7 +108,7 @@ export function handleCall(
             targetReg = null;
         }
         else {
-            let argRegs = args.map((a) => handle(a, writer));
+            let argRegs = args.map((a) => handle(a, writer, env));
             let funcReg = writer.nextReg();
             writer.addInstr(new InstrSetGetGlobal(funcReg, opName));
             writer.addInstr(new InstrArgsStart());

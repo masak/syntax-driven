@@ -11,9 +11,6 @@ import {
     Target,
 } from "./target";
 import {
-    Env,
-} from "./env";
-import {
     Conf,
 } from "./conf";
 
@@ -28,7 +25,6 @@ export class TargetWriter {
     constructor(
         public sourceName: string,
         public sourceParams: Ast,
-        public env: Env,
         public conf: Conf,
     ) {
         let maxReqReg = -1;

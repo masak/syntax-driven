@@ -30,9 +30,6 @@ import {
     TargetWriter,
 } from "./write-target";
 import {
-    Env,
-} from "./env";
-import {
     OPT_ALL,
 } from "./conf";
 
@@ -101,7 +98,6 @@ export function taba(origTarget: Target, sourceParams: Ast): Target {
     let writer = new TargetWriter(
         funcName,
         sourceParams,
-        new Env(),
         OPT_ALL,
     );
     let stackReg = maxReqReg + 1;
