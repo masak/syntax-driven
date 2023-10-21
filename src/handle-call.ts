@@ -63,7 +63,7 @@ export function handleCall(
                 let reg = handle(a, writer);
                 return reg;
             });
-            targetReg = inline(writer.env.get(opName), argRegs, writer);
+            targetReg = inline(opName, argRegs, writer);
             writer.unusedReg = targetReg + 1;
         }
         else if (writer.sourceName === opName && isTailContext &&

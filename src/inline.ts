@@ -2,17 +2,17 @@ import {
     cloneInstr,
     InstrReturnReg,
     Register,
-    Target,
 } from "./target";
 import {
     TargetWriter,
 } from "./write-target";
 
 export function inline(
-    callee: Target,
+    calleeName: string,
     argRegs: Array<Register>,
     writer: TargetWriter,
 ) {
+    let callee = writer.env.get(calleeName);
     let registerMap: Map<Register, Register> = new Map();
     for (let i = 0; i < callee.header.reqCount; i++) {
         registerMap.set(i, argRegs[i]);
