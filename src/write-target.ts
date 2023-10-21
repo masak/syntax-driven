@@ -92,6 +92,29 @@ export class TargetWriter {
         this.topIndex = this.instrs.length;
     }
 
+    writeWithFixups(
+        callback: (
+            scheduleFixup: (instr: SetInstr) => void
+        ) => Register | null
+    ): Register {
+        let fixups: Array<SetInstr> = [];
+
+        function scheduleFixup(instr: SetInstr): void {
+            fixups.push(instr);
+        }
+
+        let rr = callback(scheduleFixup);
+        let resultRegister = rr === null
+            ? this.nextReg()
+            : rr;
+
+        for (let instr of fixups) {
+            instr.targetReg = resultRegister;
+        }
+
+        return resultRegister;
+    }
+
     target(): Target {
         let regCount = -1;
         for (let instr of this.instrs) {
