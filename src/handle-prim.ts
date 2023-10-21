@@ -4,6 +4,7 @@ import {
     AstSymbol,
 } from "./source";
 import {
+    Instr,
     InstrSetPrimCarReg,
     InstrSetPrimCdrReg,
     InstrSetPrimIdRegSym,
@@ -57,6 +58,20 @@ export function handlePrim(
             : resultRegister;
     }
 
+    function handlePrim(
+        primName: string,
+        instrType: new (targetReg: Register, r1r: Register) => Instr,
+    ) {
+        if (args.length < 1) {
+            throw new Error(`Not enough operands for '${primName}'`);
+        }
+        let r1 = args[0];
+        let r1r = handle(r1, writer, env);
+        let targetReg = resultRegOrNextReg();
+        writer.addInstr(new instrType(targetReg, r1r));
+        return targetReg;
+    }
+
     if (opName === "id") {
         if (args.length < 2) {
             throw new Error("Not enough operands for 'id'");
@@ -77,34 +92,13 @@ export function handlePrim(
         }
     }
     else if (opName === "type") {
-        if (args.length < 1) {
-            throw new Error("Not enough operands for 'type'");
-        }
-        let r1 = args[0];
-        let r1r = handle(r1, writer, env);
-        let targetReg = resultRegOrNextReg();
-        writer.addInstr(new InstrSetPrimTypeReg(targetReg, r1r));
-        return targetReg;
+        return handlePrim("type", InstrSetPrimTypeReg);
     }
     else if (opName === "car") {
-        if (args.length < 1) {
-            throw new Error("Not enough operands for 'car'");
-        }
-        let r1 = args[0];
-        let r1r = handle(r1, writer, env);
-        let targetReg = resultRegOrNextReg();
-        writer.addInstr(new InstrSetPrimCarReg(targetReg, r1r));
-        return targetReg;
+        return handlePrim("car", InstrSetPrimCarReg);
     }
     else if (opName === "cdr") {
-        if (args.length < 1) {
-            throw new Error("Not enough operands for 'cdr'");
-        }
-        let r1 = args[0];
-        let r1r = handle(r1, writer, env);
-        let targetReg = resultRegOrNextReg();
-        writer.addInstr(new InstrSetPrimCdrReg(targetReg, r1r));
-        return targetReg;
+        return handlePrim("cdr", InstrSetPrimCdrReg);
     }
     else {
         let _coverageCheck: never = opName;
