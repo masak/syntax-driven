@@ -1,6 +1,5 @@
 import {
     Ast,
-    AstFunc,
     AstList,
     AstQuote,
     AstSymbol,
@@ -27,6 +26,14 @@ class EvFunc {
 }
 
 class EvQuot {
+}
+
+class AstFunc {
+    constructor(
+        public name: string,
+        public params: AstSymbol | AstList,
+        public body: Array<Ast>) {
+    }
 }
 
 const WHITESPACE = /^[\s\n]*/;

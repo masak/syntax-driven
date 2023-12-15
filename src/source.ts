@@ -3,18 +3,9 @@ import {
 } from "./parse-source";
 
 export type Ast =
-    AstFunc |
     AstList |
     AstQuote |
     AstSymbol;
-
-export class AstFunc {
-    constructor(
-        public name: string,
-        public params: AstSymbol | AstList,
-        public body: Array<Ast>) {
-    }
-}
 
 export class AstList {
     constructor(public elems: Array<Ast>) {
