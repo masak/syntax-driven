@@ -21,14 +21,14 @@ class EvTree {
 }
 
 class EvFunc {
-    constructor(public func: AstFunc) {
+    constructor(public func: Func) {
     }
 }
 
 class EvQuot {
 }
 
-class AstFunc {
+class Func {
     constructor(
         public name: string,
         public params: AstSymbol | AstList,
@@ -82,14 +82,14 @@ function toAst(ev: Ev): Ast {
     }
 }
 
-function toFunc(ev: Ev): AstFunc {
+function toFunc(ev: Ev): Func {
     if (ev instanceof EvFunc) {
-        return ev.func as AstFunc;
+        return ev.func as Func;
     }
     throw new Error(`Not a function: ${ev.constructor.name}`);
 }
 
-export function parse(input: string): AstFunc {
+export function parse(input: string): Func {
     let stack: Array<Ev> = [];
     let pos = 0;
 
@@ -120,7 +120,7 @@ export function parse(input: string): AstFunc {
                 if (!isParams(params)) {
                     throw new Error("Malformed funtion definition: params not a symbol or list");
                 }
-                stack.push(new EvFunc(new AstFunc(funcSymbol.name, params, body)));
+                stack.push(new EvFunc(new Func(funcSymbol.name, params, body)));
             }
             else {         // regular case, create a list
                 stack.push(new EvTree(list));
@@ -142,7 +142,7 @@ export function parse(input: string): AstFunc {
         }
     }
 
-    let funcs: Array<AstFunc> = stack.map(toFunc);
+    let funcs: Array<Func> = stack.map(toFunc);
     if (funcs.length !== 1) {
         throw new Error(`Expected 1 function, got ${funcs.length}`);
     }
