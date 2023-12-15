@@ -37,11 +37,11 @@ export class Source {
     public body: Array<Ast>;
 
     constructor(contents: string) {
-        let func = parse(contents);
+        let { name, params, body } = parse(contents);
 
-        this.name = func.name;
-        this.params = func.params;
-        this.body = func.body;
+        this.name = name;
+        this.params = params;
+        this.body = body;
     }
 }
 
