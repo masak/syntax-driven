@@ -17,7 +17,7 @@ export class AstFunc {
 }
 
 export class AstList {
-    constructor(public elems: Array<Ast>,) {
+    constructor(public elems: Array<Ast>) {
     }
 }
 
