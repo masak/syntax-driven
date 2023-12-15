@@ -81,7 +81,7 @@ function toFunc(ev: Ev): AstFunc {
     throw new Error(`Not a function: ${ev.constructor.name}`);
 }
 
-export function parse(input: string): Array<AstFunc> {
+export function parse(input: string): AstFunc {
     let stack: Array<Ev> = [];
     let pos = 0;
 
@@ -141,6 +141,9 @@ export function parse(input: string): Array<AstFunc> {
     }
 
     let funcs: Array<AstFunc> = stack.map(toFunc);
-    return funcs;
+    if (funcs.length !== 1) {
+        throw new Error(`Expected 1 function, got ${funcs.length}`);
+    }
+    return funcs[0];
 }
 

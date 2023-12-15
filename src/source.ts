@@ -38,13 +38,10 @@ export class Source {
 
     constructor(contents: string) {
         let func = parse(contents);
-        if (func.length !== 1) {
-            throw new Error(`Expected exactly 1 function, got ${func.length}`);
-        }
 
-        this.name = func[0].name;
-        this.params = func[0].params;
-        this.body = func[0].body;
+        this.name = func.name;
+        this.params = func.params;
+        this.body = func.body;
     }
 }
 
