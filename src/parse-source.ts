@@ -7,9 +7,11 @@ import {
 } from "./source";
 
 type Ev =
-    EvOpenParen |
-    EvTree |
-    EvQuot;
+    | EvOpenParen
+    | EvTree
+    | EvFunc
+    | EvQuot
+;
 
 class EvOpenParen {
 }
@@ -19,15 +21,16 @@ class EvTree {
     }
 }
 
+class EvFunc {
+    constructor(public func: AstFunc) {
+    }
+}
+
 class EvQuot {
 }
 
 const WHITESPACE = /^[\s\n]*/;
 const SYMBOL = /^\w+/;
-
-function isSymbolOfName(ast: Ast, name: string): boolean {
-    return ast instanceof AstSymbol && ast.name === name;
-}
 
 function isSymbol(ast: Ast): ast is AstSymbol {
     return ast instanceof AstSymbol;
@@ -53,6 +56,9 @@ function extractElems(stack: Array<Ev>): Array<EvTree> {
         else if (elem instanceof EvOpenParen) {
             return elems;
         }
+        else if (elem instanceof EvFunc) {
+            throw new Error("Found EvFunc in unexpected place");
+        }
         else {
             elems.unshift(elem);
         }
@@ -70,13 +76,8 @@ function toAst(ev: Ev): Ast {
 }
 
 function toFunc(ev: Ev): AstFunc {
-    if (ev instanceof EvTree) {
-        if (ev.ast instanceof AstFunc) {
-            return ev.ast as AstFunc;
-        }
-        else {
-            throw new Error(`Not a function: ${ev.ast.constructor.name}`);
-        }
+    if (ev instanceof EvFunc) {
+        return ev.func as AstFunc;
     }
     throw new Error(`Not a function: ${ev.constructor.name}`);
 }
@@ -105,20 +106,14 @@ export function parse(input: string): AstFunc {
                 toAst(elems[0]) instanceof AstSymbol &&
                 (toAst(elems[0]) as AstSymbol).name === "def";
             if (isFunctionDefinition) {
-                if (elems.length === 0) {
-                    throw new Error("Malformed function definition: zero elements");
-                }
-                let [firstElem, funcSymbol, params, ...body] = elems.map(toAst);
-                if (!isSymbolOfName(firstElem, "def")) {
-                    throw new Error("Malformed function definition: doesn't start with 'def'");
-                }
+                let [, funcSymbol, params, ...body] = elems.map(toAst);
                 if (!isSymbol(funcSymbol)) {
                     throw new Error("Malformed function definition: function name not symbol");
                 }
                 if (!isParams(params)) {
                     throw new Error("Malformed funtion definition: params not a symbol or list");
                 }
-                stack.push(new EvTree(new AstFunc(funcSymbol.name, params, body)));
+                stack.push(new EvFunc(new AstFunc(funcSymbol.name, params, body)));
             }
             else {         // regular case, create a list
                 stack.push(new EvTree(list));
