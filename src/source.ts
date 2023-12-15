@@ -28,11 +28,7 @@ export class Source {
     public body: Array<Ast>;
 
     constructor(contents: string) {
-        let { name, params, body } = parse(contents);
-
-        this.name = name;
-        this.params = params;
-        this.body = body;
+        [this.name, this.params, this.body] = parse(contents);
     }
 }
 

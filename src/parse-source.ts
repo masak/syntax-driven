@@ -89,7 +89,9 @@ function toFunc(ev: Ev): Func {
     throw new Error(`Not a function: ${ev.constructor.name}`);
 }
 
-export function parse(input: string): Func {
+export function parse(
+    input: string,
+): [string, AstSymbol | AstList, Array<Ast>] {
     let stack: Array<Ev> = [];
     let pos = 0;
 
@@ -146,6 +148,8 @@ export function parse(input: string): Func {
     if (funcs.length !== 1) {
         throw new Error(`Expected 1 function, got ${funcs.length}`);
     }
-    return funcs[0];
+
+    let func = funcs[0];
+    return [func.name, func.params, func.body];
 }
 
