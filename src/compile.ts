@@ -38,14 +38,6 @@ import {
     isCall,
 } from "./handle-call";
 
-function enumerate<T>(array: Array<T>): Array<[number, T]> {
-    let result: Array<[number, T]> = [];
-    for (let i = 0; i < array.length; i++) {
-        result.push([i, array[i]]);
-    }
-    return result;
-}
-
 const selfQuotingSymbols = new Set(["nil", "t"]);
 
 function handlePossiblyTail(
@@ -170,14 +162,17 @@ export function compile(
     writer.setTopIndex();
 
     // body
-    let returnReg: Register | null = 0;
-    for (let [index, statement] of enumerate(source.body)) {
-        let isTailContext = index === source.body.length - 1;
-        returnReg = handlePossiblyTail(statement, writer, env, isTailContext);
-        if (returnReg === null) {
-            break;
-        }
+    if (source.body.length !== 1) {
+        throw new Error(`Can't handle body of non-1 length`);
     }
+    let statement = source.body[0];
+    let isTailContext = true;
+    let returnReg: Register | null = handlePossiblyTail(
+        statement,
+        writer,
+        env,
+        isTailContext,
+    );
     if (returnReg !== null) {
         writer.addInstr(new InstrReturnReg(returnReg));
     }
